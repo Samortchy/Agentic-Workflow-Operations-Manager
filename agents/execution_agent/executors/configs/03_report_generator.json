@@ -1,0 +1,53 @@
+{
+  "agent_name": "report_generator",
+  "agent_version": "v1",
+  "department": "cross-dept",
+  "risk_tier": "medium",
+  "approval": "single_confirm",
+  "steps": [
+    {
+      "name": "extract_report_params",
+      "type": "extractor",
+      "class": "NLPExtractor",
+      "config": {
+        "fields_to_extract": ["report_type", "date_range", "department", "format"]
+      }
+    },
+    {
+      "name": "fetch_metrics",
+      "type": "processor",
+      "class": "DBFetcher",
+      "config": {
+        "table": "operational_metrics",
+        "output_field": "metrics",
+        "filters": {
+          "department": "execution.steps.extract_report_params.data.department",
+          "date_range": "execution.steps.extract_report_params.data.date_range"
+        }
+      }
+    },
+    {
+      "name": "generate_report",
+      "type": "processor",
+      "class": "LLMGenerator",
+      "config": {
+        "prompt_template": "generate_report",
+        "strategy": "single_pass",
+        "temperature": 0.2,
+        "output_field": "report_content"
+      }
+    },
+    {
+      "name": "write_report_file",
+      "type": "dispatcher",
+      "class": "FileDispatcher",
+      "config": {
+        "output_dir": "output/reports",
+        "content_field": "execution.steps.generate_report.data.report_content",
+        "format": "pdf"
+      }
+    }
+  ],
+  "on_failure": "log_and_alert",
+  "outcome_signal": true
+}

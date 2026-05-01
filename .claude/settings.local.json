@@ -3,7 +3,16 @@
     "allow": [
       "Bash(npm install *)",
       "PowerShell(Get-Command *)",
-      "PowerShell(npm *)"
+      "PowerShell(npm *)",
+      "Bash(Get-ChildItem *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\configs\\\\\" | Where-Object { $_.Length -eq 0 } | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\core\\\\\" | ForEach-Object { \"$\\($_.Name\\): $\\($_.Length\\) bytes\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\steps\\\\processors\\\\\" | ForEach-Object { \"$\\($_.Name\\): $\\($_.Length\\) bytes\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\steps\\\\extractors\\\\\" | ForEach-Object { \"$\\($_.Name\\): $\\($_.Length\\) bytes\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\steps\\\\dispatchers\\\\\" | ForEach-Object { \"$\\($_.Name\\): $\\($_.Length\\) bytes\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\steps\\\\custom\\\\\" | ForEach-Object { \"$\\($_.Name\\): $\\($_.Length\\) bytes\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\steps\\\\\" | Where-Object { $_.Name -eq \"base_step.py\" } | ForEach-Object { \"$\\($_.Name\\): $\\($_.Length\\) bytes\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\templates\\\\\" -Recurse | ForEach-Object { if \\(-not $_.PSIsContainer\\) { \"$\\($_.FullName | Split-Path -Leaf\\): $\\($_.Length\\) bytes\" } })"
     ]
   }
 }

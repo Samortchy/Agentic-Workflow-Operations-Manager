@@ -1,0 +1,58 @@
+{
+  "agent_name": "document_summarizer",
+  "agent_version": "v1",
+  "department": "cross-dept",
+  "risk_tier": "low",
+  "approval": "none",
+  "steps": [
+    {
+      "name": "extract_file",
+      "type": "extractor",
+      "class": "FileExtractor",
+      "config": {
+        "accepted_formats": [
+          "pdf",
+          "docx",
+          "txt"
+        ],
+        "chunk_size": 1500,
+        "overlap_pct": 0.2
+      }
+    },
+    {
+      "name": "summarise_chunks",
+      "type": "processor",
+      "class": "LLMGenerator",
+      "config": {
+        "prompt_template": "summarise_chunk",
+        "temperature": 0.2,
+        "strategy": "map_reduce"
+      }
+    },
+    {
+      "name": "extract_entities",
+      "type": "processor",
+      "class": "LLMGenerator",
+      "config": {
+        "prompt_template": "extract_entities",
+        "fields": [
+          "people",
+          "dates",
+          "amounts",
+          "departments"
+        ]
+      }
+    },
+    {
+      "name": "store_summary",
+      "type": "dispatcher",
+      "class": "FileDispatcher",
+      "config": {
+        "output_dir": "output/summaries",
+        "format": "json"
+      }
+    }
+  ],
+  "on_failure": "return_partial",
+  "outcome_signal": true
+}

@@ -1,5 +1,5 @@
 To: eve@company.com
-Generated-at: 2026-05-03T20:34:21.865710+00:00
-Attachment: output/presentations\T006_20260503_q2_board_review.pptx
+Generated-at: 2026-05-04T20:23:06.608168+00:00
+Attachment: output/presentations\T006_20260504_q2_finance_board_review.pptx
 
 (no body found in prior steps)

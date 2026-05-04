@@ -2,24 +2,26 @@ import json
 import os
 from openai import OpenAI
 from steps.base_step import BaseStep, StepResult
+from core.config import OPENROUTER_API_KEY
 
 
-OPENROUTER_API_KEY = os.environ.get("OPEN_ROUTER_KEY")
+
+print("API KEY:", OPENROUTER_API_KEY)
 _BASE_URL = "https://openrouter.ai/api/v1"
 
 # Model selected per agent; document_summarizer is handled separately (see _select_model).
 # All models use the :free tier confirmed via OpenRouter API (May 2026).
 _MODEL_MAP: dict[str, str] = {
-    "escalation_router":      "meta-llama/llama-3.3-70b-instruct:free",
+    "escalation_router":      "meta-llama/llama-3.3-70b-instruct",
     "report_generator":       "openai/gpt-oss-120b:free",
-    "leave_checker":          "meta-llama/llama-3.3-70b-instruct:free",
-    "email_agent":            "nousresearch/hermes-3-llama-3.1-405b:free",
-    "powerpoint_agent":       "nousresearch/hermes-3-llama-3.1-405b:free",
-    "meeting_scheduler":      "meta-llama/llama-3.3-70b-instruct:free",
+    "leave_checker":          "meta-llama/llama-3.3-70b-instruct",
+    "email_agent":            "nousresearch/hermes-3-llama-3.1-405b",
+    "powerpoint_agent":       "nousresearch/hermes-3-llama-3.1-405b",
+    "meeting_scheduler":      "meta-llama/llama-3.3-70b-instruct",
     "expense_tracker":        "openai/gpt-oss-120b:free",
-    "onboarding_coordinator": "nousresearch/hermes-3-llama-3.1-405b:free",
+    "onboarding_coordinator": "nousresearch/hermes-3-llama-3.1-405b",
 }
-_DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
+_DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct"
 
 # Named prompt library — keys match the prompt_template values in agent configs.
 _PROMPTS = {
@@ -62,6 +64,47 @@ _PROMPTS = {
         "Date range: {date_range}\n\n"
         "Data:\n{metrics}\n\n"
         "Structure the report with clear sections and return the full report text."
+    ),
+    "generate_slides": (
+        "You are a senior presentation designer. Generate a structured PowerPoint slide deck as valid JSON.\n\n"
+        "Task: {description}\n"
+        "Department: {department}\n"
+        "Requester: {requester_name}\n"
+        "Deadline: {stated_deadline}\n\n"
+        "Return ONLY a valid JSON object with this exact structure — no markdown, no explanation:\n"
+        "{{\n"
+        "  \"presentation_title\": \"<concise deck title>\",\n"
+        "  \"theme\": {{\n"
+        "    \"primary\": \"<dominant hex color e.g. 1E2761>\",\n"
+        "    \"secondary\": \"<supporting hex color e.g. CADCFC>\",\n"
+        "    \"accent\": \"<sharp accent hex e.g. FFFFFF>\",\n"
+        "    \"title_font\": \"<header font e.g. Georgia>\",\n"
+        "    \"body_font\": \"<body font e.g. Calibri>\"\n"
+        "  }},\n"
+        "  \"slides\": [\n"
+        "    {{\n"
+        "      \"title\": \"<slide title>\",\n"
+        "      \"layout\": \"<title_slide | bullets | stat_callout | two_column>\",\n"
+        "      \"bullet_points\": [\"<point 1>\", \"<point 2>\", \"<point 3>\"],\n"
+        "      \"stat\": {{\"value\": \"<big number e.g. 12.4M>\", \"label\": \"<short label>\"}},\n"
+        "      \"speaker_notes\": \"<what the presenter should say>\"\n"
+        "    }}\n"
+        "  ],\n"
+        "  \"template_path\": \"\",\n"
+        "  \"paused_for_clarification\": false\n"
+        "}}\n\n"
+        "Rules:\n"
+        "- 5 to 8 slides total\n"
+        "- First slide: layout must be 'title_slide' — executive summary, dark background feel\n"
+        "- Last slide: layout must be 'bullets' — next steps or call to action\n"
+        "- Use 'stat_callout' for slides with a key metric (revenue, growth %, etc.)\n"
+        "- Use 'two_column' for comparison or breakdown slides\n"
+        "- 3 to 5 bullet points per slide — concise, specific, no filler\n"
+        "- stat field: only populate for stat_callout layout, set to null for others\n"
+        "- theme: pick colors appropriate for the department and tone (Finance = authoritative navy/slate)\n"
+        "- Speaker notes should add context not already in the bullets\n"
+        "- If critical information is missing set paused_for_clarification to true and put your question in the first bullet\n"
+        "- Return only the JSON object. Any extra text will break the pipeline."
     ),
 }
 
@@ -203,11 +246,45 @@ class LLMGenerator(BaseStep):
             return "openai/gpt-oss-120b:free"
         return _MODEL_MAP.get(agent_name, _DEFAULT_MODEL)
 
+    def _select_max_tokens(self, config: dict, envelope: dict, phase: str) -> int:
+        template = config.get("prompt_template", "")
+
+        # Map-reduce phases
+        if phase == "map":
+            return 800
+        if phase == "reduce":
+            return 2000
+
+        # Prompt-based rules
+        if template == "generate_slides":
+            return 3500  # large JSON output
+
+        if template == "generate_report":
+            return 3000  # long structured text
+
+        if template == "draft_email_reply":
+            return 800  # short email
+
+        if template == "self_rate_confidence":
+            return 100  # tiny JSON
+
+        if template == "extract_entities":
+            return 300  # small JSON
+
+        if template == "summarise_chunk":
+            return 800
+
+        if template == "reduce_summaries":
+            return 2000
+
+        # fallback
+        return 2048
+
     def _call(self, prompt: str, config: dict, envelope: dict, phase: str = "main") -> str:
         model = self._select_model(envelope, config, phase)
         response = self._client.chat.completions.create(
             model=model,
-            max_tokens=2048,
+            max_tokens=self._select_max_tokens(config, envelope, phase),
             temperature=config.get("temperature", 0.3),
             messages=[
                 {

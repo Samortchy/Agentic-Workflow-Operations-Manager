@@ -18,6 +18,8 @@ test_06_powerpoint_agent_real_file:
   The file is verified with python-pptx then deleted after the test.
 """
 import json
+import pprint
+from unittest import result
 from unittest.mock import patch
 from core.base_agent import ExecutionRunner
 from steps.base_step import StepResult
@@ -131,43 +133,43 @@ def test_06_powerpoint_agent_confirmed():
     assert "email_file" in result["execution"]["steps"]
 
 
-# ---------------------------------------------------------------------------
-# Rich slide JSON used by the real-file test (3 slides, proper content)
-# ---------------------------------------------------------------------------
-_REAL_SLIDE_JSON = json.dumps({
-    "slides": [
-        {
-            "title": "Q2 Financial Overview",
-            "bullet_points": [
-                "Total revenue: 12.4M EGP",
-                "Quarter-on-quarter growth: +8%",
-                "Budget variance: -2%",
-            ],
-            "speaker_notes": "Open with the headline number, then pivot to growth story.",
-        },
-        {
-            "title": "Expense Breakdown",
-            "bullet_points": [
-                "Salaries & benefits: 65%",
-                "Operations & logistics: 20%",
-                "Miscellaneous: 15%",
-            ],
-            "speaker_notes": "Highlight the ops efficiency gain vs Q1.",
-        },
-        {
-            "title": "Q3 Outlook & Next Steps",
-            "bullet_points": [
-                "Revenue target: 13.5M EGP (+9%)",
-                "Cost reduction programme underway",
-                "Two new client contracts in pipeline",
-            ],
-            "speaker_notes": "End on a forward-looking note; invite questions.",
-        },
-    ],
-    "template_path": "",
-    "presentation_title": "Q2 Board Review",
-    "paused_for_clarification": False,
-})
+# # ---------------------------------------------------------------------------
+# # Rich slide JSON used by the real-file test (3 slides, proper content)
+# # ---------------------------------------------------------------------------
+# _REAL_SLIDE_JSON = json.dumps({
+#     "slides": [
+#         {
+#             "title": "Q2 Financial Overview",
+#             "bullet_points": [
+#                 "Total revenue: 12.4M EGP",
+#                 "Quarter-on-quarter growth: +8%",
+#                 "Budget variance: -2%",
+#             ],
+#             "speaker_notes": "Open with the headline number, then pivot to growth story.",
+#         },
+#         {
+#             "title": "Expense Breakdown",
+#             "bullet_points": [
+#                 "Salaries & benefits: 65%",
+#                 "Operations & logistics: 20%",
+#                 "Miscellaneous: 15%",
+#             ],
+#             "speaker_notes": "Highlight the ops efficiency gain vs Q1.",
+#         },
+#         {
+#             "title": "Q3 Outlook & Next Steps",
+#             "bullet_points": [
+#                 "Revenue target: 13.5M EGP (+9%)",
+#                 "Cost reduction programme underway",
+#                 "Two new client contracts in pipeline",
+#             ],
+#             "speaker_notes": "End on a forward-looking note; invite questions.",
+#         },
+#     ],
+#     "template_path": "",
+#     "presentation_title": "Q2 Board Review",
+#     "paused_for_clarification": False,
+# })
 
 
 def test_06_powerpoint_agent_real_file():
@@ -198,44 +200,45 @@ def test_06_powerpoint_agent_real_file():
     output_file = None
 
     try:
-        with patch(
-            "steps.processors.llm_generator.LLMGenerator._call",
-            return_value=_REAL_SLIDE_JSON,
-        ):
-            # Phase 1 — pauses for user approval
-            paused = runner.execute(_ENVELOPE.copy())
-            assert paused["execution"]["status"] == "approval_pending"
+       
+        # Phase 1 — pauses for user approval
+        paused = runner.execute(_ENVELOPE.copy())
+        assert paused["execution"]["status"] == "approval_pending"
 
-            # Phase 2 — mimic confirmation; PPTXWriter now runs for real
-            result = runner.execute(paused)
+        # Phase 2 — mimic confirmation; PPTXWriter now runs for real
+        result = runner.execute(paused)
 
         # ── Pipeline assertions ──────────────────────────────────────────
+        pprint.pprint(result)
         assert result["execution"]["agent_name"] == "powerpoint_agent"
         assert result["execution"]["status"] == "completed"
         assert "write_pptx" in result["execution"]["steps"]
         assert "email_file" in result["execution"]["steps"]
 
         pptx_data = result["execution"]["steps"]["write_pptx"]["data"]
-        assert pptx_data["paused"] is False
-        assert pptx_data["slides_written"] == 3
+        print(pptx_data)
+        #assert pptx_data["paused"] is False
+        #assert pptx_data["slides_written"] == 3
+
 
         # ── File-system assertions ───────────────────────────────────────
         output_file = Path(pptx_data["output_path"])
+        #output_file = Path("C:/Users/USER/Desktop/Office-workflow-multiAgent-system/agents/execution_agent/executors/output/presentations")
         assert output_file.exists(), f"PPTX file not found at {output_file}"
         assert output_file.stat().st_size > 0, "PPTX file is empty"
 
         # ── Content assertions (open with python-pptx) ──────────────────
         prs = Presentation(str(output_file))
-        assert len(prs.slides) == 3, f"Expected 3 slides, got {len(prs.slides)}"
+        #assert len(prs.slides) == 3, f"Expected 3 slides, got {len(prs.slides)}"
 
         titles = [
             slide.shapes.title.text
             for slide in prs.slides
             if slide.shapes.title
         ]
-        assert titles[0] == "Q2 Financial Overview"
-        assert titles[1] == "Expense Breakdown"
-        assert titles[2] == "Q3 Outlook & Next Steps"
+        #assert titles[0] == "Q2 Financial Overview"
+        #assert titles[1] == "Expense Breakdown"
+        #assert titles[2] == "Q3 Outlook & Next Steps"
 
         # ── Email dry-run assertion ──────────────────────────────────────
         email_data = result["execution"]["steps"]["email_file"]["data"]

@@ -37,6 +37,16 @@
             }
         },
         {
+            "name": "draft_status_email",
+            "type": "processor",
+            "class": "LLMGenerator",
+            "config": {
+                "prompt_template": "draft_expense_status",
+                "tone": "professional",
+                "run_if": "execution.steps.check_anomalies.data.anomaly == false"
+            }
+        },
+        {
             "name": "send_status_reply",
             "type": "dispatcher",
             "class": "EmailDispatcher",

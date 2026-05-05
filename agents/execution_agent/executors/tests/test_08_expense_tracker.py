@@ -100,11 +100,8 @@ def test_08_expense_tracker_clean():
     """
     runner = ExecutionRunner("configs/08_expense_tracker.json")
 
-    with patch(
-        "steps.extractors.db_extractor.DBExtractor.run",
-        return_value=_CLEAN_RECORD,
-    ):
-        result = runner.execute(_ENVELOPE.copy())
+  
+    result = runner.execute(_ENVELOPE.copy())
 
     assert "execution" in result
     assert result["execution"]["agent_name"] == "expense_tracker"
@@ -123,11 +120,8 @@ def test_08_expense_tracker_anomaly():
     """
     runner = ExecutionRunner("configs/08_expense_tracker.json")
 
-    with patch(
-        "steps.extractors.db_extractor.DBExtractor.run",
-        return_value=_ANOMALOUS_RECORD,
-    ):
-        result = runner.execute(_ENVELOPE.copy())
+   
+    result = runner.execute(_ENVELOPE.copy())
 
     assert "execution" in result
     assert result["execution"]["agent_name"] == "expense_tracker"

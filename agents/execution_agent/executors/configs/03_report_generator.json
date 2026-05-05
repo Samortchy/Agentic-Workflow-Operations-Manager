@@ -10,7 +10,12 @@
       "type": "extractor",
       "class": "NLPExtractor",
       "config": {
-        "fields_to_extract": ["report_type", "date_range", "department", "format"]
+        "fields_to_extract": [
+          "report_type",
+          "date_range",
+          "department",
+          "format"
+        ]
       }
     },
     {
@@ -38,13 +43,30 @@
       }
     },
     {
-      "name": "write_report_file",
-      "type": "dispatcher",
-      "class": "FileDispatcher",
+      "name": "render_pdf",
+      "type": "custom",
+      "class": "PDFRenderer",
       "config": {
-        "output_dir": "output/reports",
         "content_field": "execution.steps.generate_report.data.report_content",
-        "format": "pdf"
+        "output_dir": "reports"
+      }
+    },
+    {
+      "name": "draft_report_email",
+      "type": "processor",
+      "class": "LLMGenerator",
+      "config": {
+        "prompt_template": "draft_report_ready",
+        "tone": "professional"
+      }
+    },
+    {
+      "name": "send_report_email",
+      "type": "dispatcher",
+      "class": "EmailDispatcher",
+      "config": {
+        "recipient_field": "task.requester_name",
+        "attach_field": "execution.steps.render_pdf.data.output_path"
       }
     }
   ],

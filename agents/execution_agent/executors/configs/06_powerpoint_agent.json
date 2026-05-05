@@ -41,6 +41,15 @@
             }
         },
         {
+            "name": "draft_email",
+            "type": "processor",
+            "class": "LLMGenerator",
+            "config": {
+                "prompt_template": "draft_email_reply",
+                "tone": "professional"
+            }
+        },
+        {
             "name": "email_file",
             "type": "dispatcher",
             "class": "EmailDispatcher",

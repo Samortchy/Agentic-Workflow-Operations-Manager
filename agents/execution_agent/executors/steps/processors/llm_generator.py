@@ -6,7 +6,6 @@ from core.config import OPENROUTER_API_KEY
 
 
 
-print("API KEY:", OPENROUTER_API_KEY)
 _BASE_URL = "https://openrouter.ai/api/v1"
 
 # Model selected per agent; document_summarizer is handled separately (see _select_model).
@@ -49,6 +48,7 @@ _PROMPTS = {
         "Tone: {tone}.\n\n"
         "Task description:\n{description}\n"
         "Requester: {requester_name}\n\n"
+        "Sender name: {sender_name}\n\n"
         "Return only the email body — no subject line."
     ),
     "self_rate_confidence": (
@@ -64,6 +64,23 @@ _PROMPTS = {
         "Date range: {date_range}\n\n"
         "Data:\n{metrics}\n\n"
         "Structure the report with clear sections and return the full report text."
+    ),
+    "draft_email_attachment": (
+        "Write a short professional email notifying the requester that their "
+        "requested file is ready.\n\n"
+        "Task: {description}\n"
+        "Requester: {requester_name}\n"
+        "File: {presentation_title}\n\n"
+        "Keep it to 3-4 sentences. No subject line. No placeholder text."
+    ),
+    "draft_expense_status": (
+        "Write a professional email notifying an employee about the status of their expense report.\n\n"
+        "Task: {description}\n"
+        "Requester: {requester_name}\n"
+        "Report details:\n{metrics}\n\n"
+        "Keep it concise and factual. Confirm the report was reviewed, summarise the outcome, "
+        "and state any next steps if applicable.\n"
+        "No subject line. No placeholder text."
     ),
     "generate_slides": (
         "You are a senior presentation designer. Generate a structured PowerPoint slide deck as valid JSON.\n\n"
@@ -105,6 +122,26 @@ _PROMPTS = {
         "- Speaker notes should add context not already in the bullets\n"
         "- If critical information is missing set paused_for_clarification to true and put your question in the first bullet\n"
         "- Return only the JSON object. Any extra text will break the pipeline."
+    ),
+    "draft_report_ready": (
+        "Write a professional email notifying the requester that their report is ready.\n\n"
+        "Task: {description}\n"
+        "Requester: {requester_name}\n"
+        "Department: {department}\n"
+        "Report type: {report_type}\n\n"
+        "Keep it to 3-4 sentences. Confirm the report was generated, mention the date range "
+        "it covers, and let them know it is attached.\n"
+        "No subject line. No placeholder text."
+    ),
+    "draft_escalation_brief": (
+        "Write a professional escalation email notifying a reviewer that a task requires their attention.\n\n"
+        "Task: {description}\n"
+        "Department: {department}\n"
+        "Requester: {requester_name}\n"
+        "Priority: {priority_label}\n\n"
+        "Be concise and direct. State what the task is, why it is being escalated, "
+        "and what action is required from the reviewer.\n"
+        "Keep it to 4-5 sentences. No subject line. No placeholder text."
     ),
 }
 
@@ -281,24 +318,53 @@ class LLMGenerator(BaseStep):
         return 2048
 
     def _call(self, prompt: str, config: dict, envelope: dict, phase: str = "main") -> str:
-        model = self._select_model(envelope, config, phase)
-        response = self._client.chat.completions.create(
-            model=model,
-            max_tokens=self._select_max_tokens(config, envelope, phase),
-            temperature=config.get("temperature", 0.3),
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a precise office automation assistant. "
-                        "Follow instructions exactly and be concise."
-                    ),
-                },
-                {"role": "user", "content": prompt},
-            ],
-        )
-        return response.choices[0].message.content.strip()
+        primary_model = self._select_model(envelope, config, phase)
+        fallback_model = _DEFAULT_MODEL
+        max_tokens = self._select_max_tokens(config, envelope, phase)
 
+        def make_request(model: str):
+            return self._client.chat.completions.create(
+                model=model,
+                max_tokens=max_tokens,
+                temperature=config.get("temperature", 0.3),
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a precise office automation assistant. "
+                            "Follow instructions exactly and be concise."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+            )
+
+        try:
+            response = make_request(primary_model)
+
+        except Exception as e:
+            error_msg = str(e)
+
+            # Retry only on rate limit errors
+            if "429" in error_msg or "rate limit" in error_msg.lower():
+                try:
+                    response = make_request(fallback_model)
+                except Exception as fallback_error:
+                    raise RuntimeError(
+                        f"Primary model rate-limited and fallback failed: {fallback_error}"
+                    )
+            else:
+                raise RuntimeError(f"LLM call failed: {error_msg}")
+
+        # Validate response
+        if not response or not response.choices:
+            raise RuntimeError("Empty response from LLM")
+
+        message = response.choices[0].message
+        if not message or not message.content:
+            raise RuntimeError("LLM returned empty content")
+
+        return message.content.strip()
 
 # ------------------------------------------------------------------
 # Module-level helpers

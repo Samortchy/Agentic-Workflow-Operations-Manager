@@ -31,17 +31,18 @@
             }
         },
         {
-            "name": "render_brief",
+            "name": "draft_escalation_email",
             "type": "processor",
-            "class": "TemplateRenderer",
+            "class": "LLMGenerator",
             "config": {
-                "template": "templates/email/escalation_brief.j2"
+                "prompt_template": "draft_escalation_brief",
+                "tone": "urgent"
             }
         },
         {
             "name": "send_brief",
-            "type": "dispatcher",
-            "class": "EmailDispatcher",
+            "type": "agent_call",
+            "class": "EmailSender",
             "config": {
                 "recipient_field": "execution.steps.select_reviewer.data.reviewer_email"
             }

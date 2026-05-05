@@ -17,7 +17,19 @@ from core.envlope import resolve_path
 
 
 # Body field names checked in order when scanning prior step data.
-_BODY_KEYS = ("body", "draft", "reply_summary")
+_BODY_KEYS = ("body", 
+              "draft", 
+              "reply_summary", 
+              "draft_reply", 
+              "draft_email_reply", 
+              "email_body", 
+              "generated_reply",
+              "draft_report_ready", 
+              "draft_expense_status",  
+              "draft_summary_ready",  
+              "draft_escalation_email",
+               "rendered",
+            )
 
 
 class EmailDispatcher(BaseStep):
@@ -67,6 +79,8 @@ class EmailDispatcher(BaseStep):
 
             if dry_run:
                 result_data = self._dry_run(task_id, step_name, recipient, body, attach_path)
+               
+               
             else:
                 result_data = self._smtp_send(recipient, body, attach_path)
 

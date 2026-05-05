@@ -10,6 +10,8 @@ Expected terminal status: "completed".
 """
 from core.base_agent import ExecutionRunner
 
+import pprint
+
 _ENVELOPE = {
     "intake": {
         "department": "HR",
@@ -46,6 +48,8 @@ def test_04_leave_checker():
     runner = ExecutionRunner("configs/04_leave_checker.json")
 
     result = runner.execute(_ENVELOPE.copy())
+
+    pprint.pprint(result)
 
     assert "execution" in result
     assert result["execution"]["agent_name"] == "leave_checker"

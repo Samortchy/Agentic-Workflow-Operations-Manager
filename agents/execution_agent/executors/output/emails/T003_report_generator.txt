@@ -1,0 +1,7 @@
+To: carol@company.com
+Generated-at: 2026-05-05T12:07:13.730709+00:00
+Attachment: output\reports\T003_output.pdf
+
+Your weekly finance department report for Q1 2026 has been generated and is attached to this email.  
+It covers the period from January 1, 2026 through March 31, 2026.  
+Please review the attached file at your convenience and let us know if you have any questions.

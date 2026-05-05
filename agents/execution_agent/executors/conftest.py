@@ -8,10 +8,10 @@ from unittest.mock import MagicMock
 # module level.  A MagicMock stub lets the module load and satisfies
 # 'from groq import Groq'.  NLPExtractor never actually calls the Groq client
 # in tests (no raw_text in any envelope → _extract_via_llm returns immediately).
-if "groq" not in sys.modules:
-    _groq_mock = MagicMock()
-    _groq_mock.Groq = MagicMock()
-    sys.modules["groq"] = _groq_mock
+# if "groq" not in sys.modules:
+#     _groq_mock = MagicMock()
+#     _groq_mock.Groq = MagicMock()
+#     sys.modules["groq"] = _groq_mock
 
 # ── 1. Ensure the executors root is on sys.path ──────────────────────────────
 # Required so 'core', 'steps', and 'configs' are importable from any working dir.
@@ -26,9 +26,9 @@ os.chdir(str(EXECUTORS_DIR))
 # ── 3. Stub external API credentials ─────────────────────────────────────────
 # Prevents OpenAI / Groq client init from raising "api_key must be set".
 # Actual HTTP calls are blocked by per-test mocks — these keys are never sent.
-os.environ.setdefault("OPEN_ROUTER_KEY", "test-placeholder")
-os.environ.setdefault("GROQ_API_KEY", "test-placeholder")
-os.environ.setdefault("EMAIL_DRY_RUN", "true")
+# os.environ.setdefault("OPENROUTER_API_KEY", "test-placeholder")
+# os.environ.setdefault("GROQ_API_KEY", "test-placeholder")
+# os.environ.setdefault("EMAIL_DRY_RUN", "true")
 
 # ── 4. Alias core.envelope → core.envlope ────────────────────────────────────
 # The file on disk is core/envlope.py (missing 'e'), but the four custom steps

@@ -1,4 +1,29 @@
 To: alice@company.com
-Generated-at: 2026-05-03T20:26:56.027809+00:00
+Generated-at: 2026-05-05T14:56:02.839373+00:00
 
-(no body found in prior steps)
+Subject: Re: Check Annual Leave Balance
+
+Dear alice@company.com,
+
+Thank you for reaching out to HR. We have looked up the leave record for
+None and are pleased to share the
+details below.
+
+
+We were unable to locate a leave record matching your request. This may be
+because your record has not yet been set up in the system, or the leave type
+you requested is not on file.
+
+Please contact the HR team directly at hr@company.com so we can assist you
+further.
+
+
+
+
+
+If you have any questions or believe the balance shown is incorrect, please
+reply to this email or visit the HR portal. We are happy to review your record.
+
+Kind regards,
+HR Department — Office Automation System
+Reference: T004

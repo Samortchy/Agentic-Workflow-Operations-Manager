@@ -13,6 +13,8 @@ Expected terminal status: "approval_pending".
 from unittest.mock import patch
 from core.base_agent import ExecutionRunner
 
+import pprint
+
 _ENVELOPE = {
     "intake": {
         "department": "IT",
@@ -83,16 +85,15 @@ def test_05_email_agent_confirmed():
 
     _draft = "Dear Dave,\n\nPlease try reconnecting the VPN client and restarting the service."
 
-    with patch(
-        "steps.processors.llm_generator.LLMGenerator._call",
-        return_value=_draft,
-    ):
-        # Phase 1 — pauses for approval
-        paused = runner.execute(_ENVELOPE.copy())
-        assert paused["execution"]["status"] == "approval_pending"
+   
+    # Phase 1 — pauses for approval
+    paused = runner.execute(_ENVELOPE.copy())
+    assert paused["execution"]["status"] == "approval_pending"
 
-        # Phase 2 — mimic confirmation
-        result = runner.execute(paused)
+    # Phase 2 — mimic confirmation
+    result = runner.execute(paused)
+
+    #pprint.pprint(result)
 
     assert result["execution"]["agent_name"] == "email_agent"
     assert result["execution"]["status"] == "completed"

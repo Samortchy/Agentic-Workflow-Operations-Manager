@@ -17,6 +17,7 @@ from steps.custom.anomaly_checker           import AnomalyChecker
 from steps.custom.slot_ranker               import SlotRanker
 from steps.custom.queue_injector            import QueueInjector
 from steps.custom.pptx_writer               import PPTXWriter
+from steps.custom.pdf_renderer              import PDFRenderer
 
 STEP_REGISTRY = {
     "extractor": {
@@ -39,11 +40,13 @@ STEP_REGISTRY = {
         "SlotRanker":     SlotRanker,
         "QueueInjector":  QueueInjector,
         "PPTXWriter":     PPTXWriter,
+        "PDFRenderer":    PDFRenderer,
     },
     "agent_call": {
         "DocumentSummarizer": "configs/02_document_summarizer.json",
         "EscalationRouter":   "configs/01_escalation_router.json",
         "LeaveChecker":       "configs/04_leave_checker.json",
         "ExpenseTracker":     "configs/08_expense_tracker.json",
+        "EmailSender":        "configs/05_email_agent.json",
     },
 }

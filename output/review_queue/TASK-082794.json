@@ -1,0 +1,40 @@
+{
+  "envelope_id": "ENV-9B1614",
+  "raw_text": "I need to schedule a 1-hour meeting with the product team and design team for next Monday at 10am.",
+  "received_at": "2026-05-06T14:28:48.398806+00:00",
+  "errors": [],
+  "intake": {
+    "department": "HR",
+    "task_type": "meeting_scheduling",
+    "isAutonomous": "false",
+    "reasoning": "The request requires coordination with multiple teams and involves a specific time and date, which may require human intervention.",
+    "confidence": 0.8,
+    "processed_at": "2026-05-06T14:28:49.051343+00:00"
+  },
+  "task": {
+    "task_id": "TASK-082794",
+    "title": "Schedule Meeting",
+    "description": "Schedule a 1-hour meeting with the product team and design team for next Monday at 10am",
+    "department": "HR",
+    "isAutonomous": "false",
+    "task_type": "meeting_scheduling",
+    "requester_name": "unknown",
+    "stated_deadline": "next Monday at 10am",
+    "action_required": "Schedule the meeting",
+    "success_criteria": "Meeting is scheduled and confirmed with all attendees",
+    "structured_at": "2026-05-06T14:28:52.297394+00:00"
+  },
+  "priority": {
+    "priority_score": 3,
+    "priority_label": "high",
+    "confidence": 0.993,
+    "model_version": "1.0.0",
+    "top_features_used": [],
+    "scored_at": "2026-05-06T14:28:53Z"
+  },
+  "execution": {
+    "status": "queued_for_review",
+    "review_reason": "The request requires coordination with multiple teams and involves a specific time and date, which may require human intervention.",
+    "queued_at": "2026-05-06T14:28:53.314969+00:00"
+  }
+}

@@ -21,21 +21,36 @@ Given a request, you must return a JSON object with exactly these fields:
 - confidence: a float between 0.0 and 1.0
 
 AUTONOMY TAXONOMY:
-- Password reset / access request → IT, true
-- Software info / FAQ lookup → IT, true
-- Laptop / equipment procurement → IT, false
-- Server outage / critical failure → IT, false
-- Expense report status check → Finance, true
-- Budget inquiry / policy question → Finance, true
-- Invoice approval / payment release → Finance, false
-- Payroll / salary dispute → Finance, false
-- Leave balance inquiry → HR, true
-- Onboarding info request → HR, true
-- Hiring / termination / promotion → HR, false
-- Payroll change / raise request → HR, false
-- Workplace complaint / dispute → HR, false
+IT — autonomous:
+- Password reset / access request → true
+- Software info / FAQ lookup → true
+- Email drafting / reply generation → true
+- Presentation / slide deck creation → true
+- Document summarisation → true
+- Report generation / analytics → true
+- Meeting scheduling / calendar booking → true
+IT — human required:
+- Laptop / equipment procurement → false
+- Server outage / critical failure → false
+
+Finance — autonomous:
+- Expense report status check → true
+- Budget inquiry / policy question → true
+- Expense tracking / report request → true
+Finance — human required:
+- Invoice approval / payment release → false
+- Payroll / salary dispute → false
+
+HR — autonomous:
+- Leave balance inquiry → true
+- Onboarding info request → true
+HR — human required:
+- Hiring / termination / promotion → false
+- Payroll change / raise request → false
+- Workplace complaint / dispute → false
 
 Ambiguous cases default to isAutonomous: false.
+IMPORTANT: return isAutonomous as a JSON boolean (true or false), never as a string.
 Return ONLY valid JSON, no extra text, no markdown, no backticks.
 """
 

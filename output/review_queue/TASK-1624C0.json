@@ -1,0 +1,40 @@
+{
+  "envelope_id": "ENV-D7A028",
+  "raw_text": "We need to terminate John Smith effective next Friday due to performance reasons.",
+  "received_at": "2026-05-06T14:04:11.112096+00:00",
+  "errors": [],
+  "intake": {
+    "department": "HR",
+    "task_type": "termination_request",
+    "isAutonomous": false,
+    "reasoning": "The request involves a termination, which requires manual processing and approval, so it is not autonomous.",
+    "confidence": 0.9,
+    "processed_at": "2026-05-06T14:04:11.818154+00:00"
+  },
+  "task": {
+    "task_id": "TASK-1624C0",
+    "title": "Terminate John Smith",
+    "description": "We need to terminate John Smith effective next Friday due to performance reasons.",
+    "department": "HR",
+    "isAutonomous": false,
+    "task_type": "termination_request",
+    "requester_name": "unknown",
+    "stated_deadline": "next Friday",
+    "action_required": "Terminate John Smith from the company.",
+    "success_criteria": "John Smith is removed from the company payroll and all access is revoked.",
+    "structured_at": "2026-05-06T14:04:13.638572+00:00"
+  },
+  "priority": {
+    "priority_score": 3,
+    "priority_label": "high",
+    "confidence": 0.994,
+    "model_version": "1.0.0",
+    "top_features_used": [],
+    "scored_at": "2026-05-06T14:04:20Z"
+  },
+  "execution": {
+    "status": "queued_for_review",
+    "review_reason": "The request involves a termination, which requires manual processing and approval, so it is not autonomous.",
+    "queued_at": "2026-05-06T14:04:20.570248+00:00"
+  }
+}

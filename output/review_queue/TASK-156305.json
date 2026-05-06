@@ -1,0 +1,40 @@
+{
+  "envelope_id": "ENV-E8E694",
+  "raw_text": "We need to terminate John Smith effective next Friday due to performance issues.",
+  "received_at": "2026-05-06T14:28:53.321520+00:00",
+  "errors": [],
+  "intake": {
+    "department": "HR",
+    "task_type": "employee_termination",
+    "isAutonomous": false,
+    "reasoning": "This task involves a hiring or termination decision, which requires human intervention and is therefore not autonomous.",
+    "confidence": 0.9,
+    "processed_at": "2026-05-06T14:28:53.769458+00:00"
+  },
+  "task": {
+    "task_id": "TASK-156305",
+    "title": "Terminate John Smith",
+    "description": "We need to terminate John Smith effective next Friday due to performance issues.",
+    "department": "HR",
+    "isAutonomous": false,
+    "task_type": "employee_termination",
+    "requester_name": "unknown",
+    "stated_deadline": "next Friday",
+    "action_required": "Terminate John Smith from the company.",
+    "success_criteria": "John Smith is removed from the employee roster.",
+    "structured_at": "2026-05-06T14:28:57.729178+00:00"
+  },
+  "priority": {
+    "priority_score": 3,
+    "priority_label": "high",
+    "confidence": 0.994,
+    "model_version": "1.0.0",
+    "top_features_used": [],
+    "scored_at": "2026-05-06T14:28:58Z"
+  },
+  "execution": {
+    "status": "queued_for_review",
+    "review_reason": "This task involves a hiring or termination decision, which requires human intervention and is therefore not autonomous.",
+    "queued_at": "2026-05-06T14:28:58.536699+00:00"
+  }
+}

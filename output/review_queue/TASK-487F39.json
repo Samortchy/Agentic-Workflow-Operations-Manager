@@ -1,0 +1,40 @@
+{
+  "envelope_id": "ENV-56E9ED",
+  "raw_text": "Hi team,\n\nI need a PowerPoint presentation for our Q2 strategy meeting next Thursday. Around 10 slides for senior leadership covering sales performance and product roadmap.\n\nThanks,\nSara Mahmoud\nHead of Strategy",
+  "received_at": "2026-05-06T14:25:12.866120+00:00",
+  "errors": [],
+  "intake": {
+    "department": "IT",
+    "task_type": "laptop_equipment_procurement",
+    "isAutonomous": false,
+    "reasoning": "The request for a PowerPoint presentation is related to equipment or software support, which falls under the IT department, but creating a custom presentation is not an autonomous task.",
+    "confidence": 0.8,
+    "processed_at": "2026-05-06T14:25:13.494641+00:00"
+  },
+  "task": {
+    "task_id": "TASK-487F39",
+    "title": "Q2 Strategy Meeting Presentation",
+    "description": "Create a PowerPoint presentation for the Q2 strategy meeting covering sales performance and product roadmap",
+    "department": "IT",
+    "isAutonomous": false,
+    "task_type": "laptop_equipment_procurement",
+    "requester_name": "Sara Mahmoud",
+    "stated_deadline": "next Thursday",
+    "action_required": "Create a PowerPoint presentation",
+    "success_criteria": "A 10-slide PowerPoint presentation is delivered to senior leadership",
+    "structured_at": "2026-05-06T14:25:17.893016+00:00"
+  },
+  "priority": {
+    "priority_score": 3,
+    "priority_label": "high",
+    "confidence": 0.995,
+    "model_version": "1.0.0",
+    "top_features_used": [],
+    "scored_at": "2026-05-06T14:25:19Z"
+  },
+  "execution": {
+    "status": "queued_for_review",
+    "review_reason": "The request for a PowerPoint presentation is related to equipment or software support, which falls under the IT department, but creating a custom presentation is not an autonomous task.",
+    "queued_at": "2026-05-06T14:25:19.513561+00:00"
+  }
+}

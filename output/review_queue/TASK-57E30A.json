@@ -1,0 +1,40 @@
+{
+  "envelope_id": "ENV-FC982E",
+  "raw_text": "We need to terminate John Smith effective next Friday due to performance issues.",
+  "received_at": "2026-05-06T14:32:07.715182+00:00",
+  "errors": [],
+  "intake": {
+    "department": "HR",
+    "task_type": "employee_termination",
+    "isAutonomous": false,
+    "reasoning": "Termination of an employee requires human involvement due to its sensitive and complex nature.",
+    "confidence": 0.99,
+    "processed_at": "2026-05-06T14:32:08.241169+00:00"
+  },
+  "task": {
+    "task_id": "TASK-57E30A",
+    "title": "Terminate John Smith",
+    "description": "We need to terminate John Smith effective next Friday due to performance issues.",
+    "department": "HR",
+    "isAutonomous": false,
+    "task_type": "employee_termination",
+    "requester_name": "unknown",
+    "stated_deadline": "next Friday",
+    "action_required": "Terminate the employee.",
+    "success_criteria": "John Smith's employment is officially ended.",
+    "structured_at": "2026-05-06T14:32:11.284654+00:00"
+  },
+  "priority": {
+    "priority_score": 2,
+    "priority_label": "medium",
+    "confidence": 0.999,
+    "model_version": "1.0.0",
+    "top_features_used": [],
+    "scored_at": "2026-05-06T14:32:13Z"
+  },
+  "execution": {
+    "status": "queued_for_review",
+    "review_reason": "Termination of an employee requires human involvement due to its sensitive and complex nature.",
+    "queued_at": "2026-05-06T14:32:13.173174+00:00"
+  }
+}

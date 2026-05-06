@@ -14,7 +14,26 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\steps\\\\\" | Where-Object { $_.Name -eq \"base_step.py\" } | ForEach-Object { \"$\\($_.Name\\): $\\($_.Length\\) bytes\" })",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\simom\\\\Agentic-Workflow-Operations-Manager\\\\agents\\\\execution_agent\\\\executors\\\\templates\\\\\" -Recurse | ForEach-Object { if \\(-not $_.PSIsContainer\\) { \"$\\($_.FullName | Split-Path -Leaf\\): $\\($_.Length\\) bytes\" } })",
       "PowerShell(python -c \"import fpdf; print\\('fpdf2 ok'\\)\" 2>&1; python -c \"import reportlab; print\\('reportlab ok'\\)\" 2>&1)",
-      "PowerShell(pip install *)"
+      "PowerShell(pip install *)",
+      "Bash(Select-Object FullName)",
+      "Bash(python -c \"import fastapi, uvicorn; print\\('ok'\\)\")",
+      "Bash(uvicorn api:app --host 0.0.0.0 --port 8000)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(python -m uvicorn api:app --host 0.0.0.0 --port 8000)",
+      "Bash(python -m pip install groq openai python-dotenv scikit-learn joblib jinja2)",
+      "Bash(curl -sf http://localhost:8000/health)",
+      "Bash(cat C:/Users/simom/AppData/Local/Temp/server_err.txt)",
+      "Bash(timeout 8 python -m uvicorn api:app --host 127.0.0.1 --port 8000)",
+      "Bash(python -m uvicorn api:app --host 127.0.0.1 --port 8000)",
+      "Bash(echo \"PID=$!\")",
+      "Bash(curl -s http://127.0.0.1:8000/health)",
+      "Bash(curl *)",
+      "Bash(python -m json.tool)",
+      "Bash(python3 *)",
+      "Bash(pkill -f \"uvicorn api:app\")",
+      "PowerShell(netstat *)",
+      "PowerShell(Get-Process *)",
+      "Bash(node -e \"require\\('./app'\\); console.log\\('app loads ok'\\)\")"
     ]
   }
 }

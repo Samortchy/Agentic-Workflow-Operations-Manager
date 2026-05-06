@@ -28,6 +28,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from main_pipeline.pipeline import run_pipeline
+from orchestration_agent.orchestrator import Orchestrator
+
+_orchestrator = Orchestrator()
 
 app = FastAPI(title="AWOM Pipeline API", version="1.0.0")
 
@@ -70,6 +73,30 @@ def pipeline(body: PipelineRequest):
         result = run_pipeline(body.raw_text)
     except Exception as exc:
         # Surface pipeline errors as 500 so Express falls back to mock if needed
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return result
+
+
+@app.post("/api/orchestrate")
+def orchestrate(body: PipelineRequest):
+    """
+    Run raw text through the full pipeline AND automatically execute the
+    appropriate agent.
+
+    - Autonomous tasks are routed to the best-matching execution agent.
+    - Non-autonomous tasks are written to output/review_queue/ and returned
+      with execution.status = "queued_for_review".
+    - Unknown task types fall back to the escalation router.
+
+    Returns the complete envelope including the execution section.
+    """
+    if not body.raw_text or not body.raw_text.strip():
+        raise HTTPException(status_code=400, detail="raw_text must not be empty")
+
+    try:
+        result = _orchestrator.run(body.raw_text)
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
     return result

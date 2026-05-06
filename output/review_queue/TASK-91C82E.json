@@ -1,0 +1,40 @@
+{
+  "envelope_id": "ENV-DB742A",
+  "raw_text": "Please create a 10-slide PowerPoint deck for our Q3 board meeting covering revenue and product roadmap. Requester: Sara, Head of Strategy.",
+  "received_at": "2026-05-06T14:28:40.206536+00:00",
+  "errors": [],
+  "intake": {
+    "department": "Finance",
+    "task_type": "report_creation",
+    "isAutonomous": false,
+    "reasoning": "The request involves creating a presentation for a board meeting, which requires human oversight and approval, so it is not autonomous.",
+    "confidence": 0.8,
+    "processed_at": "2026-05-06T14:28:40.910397+00:00"
+  },
+  "task": {
+    "task_id": "TASK-91C82E",
+    "title": "Q3 Board Meeting Slides",
+    "description": "Create a 10-slide PowerPoint deck for the Q3 board meeting covering revenue and product roadmap",
+    "department": "Finance",
+    "isAutonomous": false,
+    "task_type": "report_creation",
+    "requester_name": "Sara",
+    "stated_deadline": "none stated",
+    "action_required": "Create a PowerPoint deck",
+    "success_criteria": "A 10-slide PowerPoint deck is delivered to the requester",
+    "structured_at": "2026-05-06T14:28:43.986049+00:00"
+  },
+  "priority": {
+    "priority_score": 2,
+    "priority_label": "medium",
+    "confidence": 0.998,
+    "model_version": "1.0.0",
+    "top_features_used": [],
+    "scored_at": "2026-05-06T14:28:48Z"
+  },
+  "execution": {
+    "status": "queued_for_review",
+    "review_reason": "The request involves creating a presentation for a board meeting, which requires human oversight and approval, so it is not autonomous.",
+    "queued_at": "2026-05-06T14:28:48.367854+00:00"
+  }
+}

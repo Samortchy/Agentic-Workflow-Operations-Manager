@@ -1,0 +1,40 @@
+{
+  "envelope_id": "ENV-F10679",
+  "raw_text": "Can you generate an expense report for my Q1 submissions?",
+  "received_at": "2026-05-06T14:25:50.150828+00:00",
+  "errors": [],
+  "intake": {
+    "department": "Finance",
+    "task_type": "expense_report_generation",
+    "isAutonomous": false,
+    "reasoning": "The request for generating an expense report is not a simple status check, but rather a request for creation of a report, which requires manual processing.",
+    "confidence": 0.8,
+    "processed_at": "2026-05-06T14:25:50.593105+00:00"
+  },
+  "task": {
+    "task_id": "TASK-EDA537",
+    "title": "Q1 Expense Report",
+    "description": "Generate an expense report for Q1 submissions",
+    "department": "Finance",
+    "isAutonomous": false,
+    "task_type": "expense_report_generation",
+    "requester_name": "unknown",
+    "stated_deadline": "none stated",
+    "action_required": "Generate expense report",
+    "success_criteria": "Expense report is accurately completed and submitted",
+    "structured_at": "2026-05-06T14:25:53.627911+00:00"
+  },
+  "priority": {
+    "priority_score": 1,
+    "priority_label": "low",
+    "confidence": 0.999,
+    "model_version": "1.0.0",
+    "top_features_used": [],
+    "scored_at": "2026-05-06T14:25:55Z"
+  },
+  "execution": {
+    "status": "queued_for_review",
+    "review_reason": "The request for generating an expense report is not a simple status check, but rather a request for creation of a report, which requires manual processing.",
+    "queued_at": "2026-05-06T14:25:55.042698+00:00"
+  }
+}

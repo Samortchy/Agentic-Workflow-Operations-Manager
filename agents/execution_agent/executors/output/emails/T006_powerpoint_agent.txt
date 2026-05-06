@@ -1,14 +1,19 @@
 To: eve@company.com
-Generated-at: 2026-05-05T10:27:07.955084+00:00
-Attachment: output/presentations\T006_20260505_q2_finance_board_review.pptx
+Generated-at: 2026-05-06T15:10:07.166951+00:00
+Attachment: output/presentations\T006_20260506_q2_finance_board_review.pptx
 
 Dear Eve,
 
-Thank you for your request to create a PowerPoint presentation for the upcoming Q2 board review meeting. I will begin working on this right away.
+I hope this email finds you well. I understand that you require a PowerPoint presentation for the upcoming Q2 board review meeting. I would be more than happy to assist you with this task.
 
-To ensure the presentation meets your expectations, could you please provide me with any specific content, themes, or data you would like included? Also, please let me know the deadline for this task.
+To ensure the presentation meets your expectations, could you please provide me with the following details:
 
-I look forward to your feedback.
+1. The main topics or areas you want to be covered in the presentation.
+2. Any specific data, reports, or images you would like to include.
+3. The desired length of the presentation (number of slides).
+4. The deadline by when you need the completed presentation.
+
+Once I have this information, I can start working on the presentation immediately. Please feel free to reach out if you have any questions or need further assistance.
 
 Best regards,
 {sender_name}

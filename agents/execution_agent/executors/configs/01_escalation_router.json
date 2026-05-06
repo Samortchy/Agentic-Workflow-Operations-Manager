@@ -41,10 +41,20 @@
         },
         {
             "name": "send_brief",
-            "type": "agent_call",
-            "class": "EmailSender",
+            "type": "dispatcher",
+            "class": "EmailDispatcher",
             "config": {
-                "recipient_field": "execution.steps.select_reviewer.data.reviewer_email"
+                "recipient_field": "execution.steps.select_reviewer.data.reviewer_email",
+                "log_audit": true
+            }
+        },
+        {
+            "name": "notify_requester",
+            "type": "dispatcher",
+            "class": "EmailDispatcher",
+            "config": {
+                "recipient_field": "task.requester_name",
+                "log_audit": true
             }
         }
     ],

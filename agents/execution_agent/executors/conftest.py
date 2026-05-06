@@ -35,5 +35,5 @@ os.chdir(str(EXECUTORS_DIR))
 # (AnomalyChecker, SlotRanker, QueueInjector, PPTXWriter) import from
 # 'core.envelope'.  Registering the alias here — before any step module is
 # imported — lets step_registry.py load without ModuleNotFoundError.
-import core.envlope as _envlope_module
-sys.modules.setdefault("core.envelope", _envlope_module)
+import core.envelope as _envelope_module
+sys.modules.setdefault("core.envelope", _envelope_module)

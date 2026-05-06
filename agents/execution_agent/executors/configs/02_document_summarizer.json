@@ -44,6 +44,24 @@
       }
     },
     {
+      "name": "draft_summary_email",
+      "type": "processor",
+      "class": "LLMGenerator",
+      "config": {
+        "prompt_template": "draft_summary_ready",
+        "tone": "professional"
+      }
+    },
+    {
+      "name": "send_summary_email",
+      "type": "dispatcher",
+      "class": "EmailDispatcher",
+      "config": {
+        "recipient_field": "task.requester_name",
+        "log_audit": true
+      }
+    },
+    {
       "name": "store_summary",
       "type": "dispatcher",
       "class": "FileDispatcher",

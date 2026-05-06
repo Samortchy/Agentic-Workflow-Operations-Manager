@@ -1,5 +1,5 @@
 To: alice@company.com
-Generated-at: 2026-05-05T14:56:02.839373+00:00
+Generated-at: 2026-05-06T14:49:56.223323+00:00
 
 Subject: Re: Check Annual Leave Balance
 

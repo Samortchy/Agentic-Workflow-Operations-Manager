@@ -1,14 +1,20 @@
 {
   "chunks": [
-    "Finance Department \u2013 Report\n1. Executive Summary\nThis report provides an overview of the Finance Department\u2019s activities for the specified period. No\ndata was supplied for analysis; therefore, the sections below outline the standard structure and note\nthe absence of data.\n2. Scope & Objectives\nScope:** Review of financial metrics, transactions, and performance indicators.\nObjective:** To present a comprehensive financial overview to support decisionnmaking.\n3. Data Overview\nData Provided:** None\nImplication:** No quantitative or qualitative information is available for inclusion in this report.\n4. Analysis\nNo data to analyze.*\nIf data becomes available, the following analyses would be performed:\nRevenue and expense trends\nBudget vs. actual comparisons\nCash flow statements\nKey performance indicators (KPIs)\n5. Findings & Observations\nNo findings can be reported due to the lack of data.\n6. Recommendations\n1. **Data Collection:** Ensure that relevant financial data (e.g., transaction logs, budget reports,\nKPI metrics) is gathered and submitted for future reporting cycles.\n2. **Reporting Schedule:** Establish a regular reporting cadence (monthly/quarterly) to maintain\nupntondate financial visibility.\n3. **Data Validation:** Implement validation checks to confirm completeness and accuracy before\nreport generation.\n7. Next Steps\nRequest the necessary financial datasets from the appropriate sources.\nDefine the reporting period and metrics required for the upcoming report.\nSchedule a ",
-    "al visibility.\n3. **Data Validation:** Implement validation checks to confirm completeness and accuracy before\nreport generation.\n7. Next Steps\nRequest the necessary financial datasets from the appropriate sources.\nDefine the reporting period and metrics required for the upcoming report.\nSchedule a follownup meeting to confirm data availability and reporting timelines.\n8. Appendices\nNo appendices applicable.*\nPrepared by: Finance Department*\nDate: \u2014*"
+    "Finance Department \u2013 Report\nReport Type:** Not Specified\nDate Range:** Not Specified\n1. Executive Summary\nNo data was provided for this reporting period. Consequently, the report does not contain any\nquantitative analysis, findings, or recommendations.\n2. Introduction\nThis document is intended to present financial information and insights for the Finance Department.\nAs no data set was supplied, the sections that would normally contain analysis, tables, and charts\nare omitted.\n3. Data Overview\nData Source:** None provided\nData Volume:** 0 records\n4. Analysis\nNo analysis can be performed without input data.*\n5. Findings & Recommendations\nFindings:** Not applicable.\nRecommendations:** Ensure that the required data is collected and submitted for future reporting\ncycles.\n6. Conclusion\nThe absence of data precludes the generation of a substantive finance report. Please provide the\nrelevant data set to enable a complete analysis and actionable insights.\nPrepared by: Finance Department*\nDate: \u2014*"
   ],
   "format": "pdf",
-  "total_chunks": 2,
-  "summary": "Here is the merged summary:\n\n**Summary:**\nNo financial data was provided for analysis, resulting in no reported decisions. To move forward, the following action items are recommended:\n1. Collect relevant financial data.\n2. Establish a regular reporting schedule.\n3. Implement data validation checks.\n4. Request necessary financial datasets.\n5. Define the reporting period and metrics.\nNext steps include requesting financial datasets, defining reporting parameters, and scheduling a follow-up meeting to confirm data availability and timelines.",
-  "chunk_count": 2,
-  "people": null,
-  "dates": null,
-  "amounts": null,
-  "departments": null
+  "total_chunks": 1,
+  "summary": "No data was provided for the finance report, resulting in 0 records. The data source was none. It is recommended to collect and submit the required data for future reporting cycles.",
+  "chunk_count": 1,
+  "type": "entities",
+  "content": {
+    "<field_name>": null
+  },
+  "metadata": {},
+  "confidence": null,
+  "draft_summary_ready": "Dear Bob,\n\nI have processed the quarterly finance report you requested.\n\nSummary: No data was provided for the finance report, resulting in 0 records. The data source was none. It is recommended to collect and submit the required data for future reporting cycles.\n\nBest regards,  \n[Your Name]  \nFinance Department, [Company Name]",
+  "dry_run": true,
+  "recipient": "bob@company.com",
+  "output_path": "output\\emails\\T002_document_summarizer.txt",
+  "audit_log_id": "f00ca2c0-462c-407b-9f5b-0846e2ab2841"
 }

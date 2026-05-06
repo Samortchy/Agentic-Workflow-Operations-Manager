@@ -1,4 +1,11 @@
-To: manager@company.com
-Generated-at: 2026-05-03T20:26:53.108194+00:00
+To: alice@company.com
+Generated-at: 2026-05-06T13:13:33.500289+00:00
 
-(no body found in prior steps)
+Dear Reviewer,
+
+The finance team is escalating a budget dispute that requires your immediate attention as the manager. This dispute is currently blocking the progress of a critical project and needs to be resolved promptly to avoid further delays. Your prompt review and decision are crucial in resolving this matter.
+
+Please review the budget dispute details and provide your approval or feedback as soon as possible.
+
+Best regards,
+alice@company.com

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from steps.base_step import BaseStep, StepResult
-from core.envlope import resolve_path
+from core.envelope import resolve_path
 
 
 _DEFAULT_DB_PATH = "data/office.db"

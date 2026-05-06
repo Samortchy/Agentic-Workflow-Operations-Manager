@@ -93,7 +93,7 @@ def test_05_email_agent_confirmed():
     # Phase 2 — mimic confirmation
     result = runner.execute(paused)
 
-    #pprint.pprint(result)
+    pprint.pprint(result["execution"])
 
     assert result["execution"]["agent_name"] == "email_agent"
     assert result["execution"]["status"] == "completed"

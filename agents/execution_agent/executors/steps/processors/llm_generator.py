@@ -24,65 +24,156 @@ _DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct"
 
 # Named prompt library — keys match the prompt_template values in agent configs.
 _PROMPTS = {
+    # --------------------------------------------------
+    # SUMMARIZATION
+    # --------------------------------------------------
+
     "summarise_chunk": (
         "Summarise the following document chunk concisely. "
-        "Retain key facts, decisions, and action items. Omit filler text.\n\n"
+        "Retain key facts, decisions, and action items. Omit filler text.\n"
+        "Return plain text only — no JSON, no markdown, no backticks.\n\n"
         "Chunk:\n{text}"
     ),
     "reduce_summaries": (
-        "Merge these partial summaries into one coherent, concise final summary.\n\n"
+        "Merge these partial summaries into one coherent, concise final summary.\n"
+        "Return plain text only — no JSON, no markdown, no backticks.\n\n"
         "Partial summaries:\n{summaries}"
     ),
-    "extract_entities": (
-        "Extract the following entities from the text: {fields}.\n"
-        "Return a valid JSON object with exactly those keys. Use null for any not found.\n\n"
-        "Text:\n{text}"
-    ),
+
     "summarise_attachment": (
-        "Summarise the document referenced in this task. "
-        "Focus on the main request, key figures, and deadlines.\n\n"
-        "Task description:\n{description}\n\nRaw text:\n{raw_text}"
+        "Summarise the document.\n\n"
+        "Task:\n{description}\n\n"
+        "Text:\n{raw_text}\n\n"
+        "Return ONLY valid JSON:\n"
+        "{\n"
+        "  \"type\": \"summary\",\n"
+        "  \"content\": \"<summary including key facts, deadlines, figures>\",\n"
+        "  \"metadata\": {},\n"
+        "  \"confidence\": null\n"
+        "}"
     ),
+
+    # --------------------------------------------------
+    # EXTRACTION
+    # --------------------------------------------------
+
+    "extract_entities": (
+        "Extract the following entities: {fields}\n\n"
+        "Text:\n{text}\n\n"
+        "Return ONLY valid JSON:\n"
+        "{\n"
+        "  \"type\": \"entities\",\n"
+        "  \"content\": {\n"
+        "    \"<field_name>\": \"value or null\"\n"
+        "  },\n"
+        "  \"metadata\": {},\n"
+        "  \"confidence\": null\n"
+        "}"
+    ),
+
+    # --------------------------------------------------
+    # EMAILS
+    # --------------------------------------------------
+
     "draft_email_reply": (
         "Draft a professional email reply for the following request. "
         "Tone: {tone}.\n\n"
         "Task description:\n{description}\n"
         "Requester: {requester_name}\n\n"
         "Sender name: {sender_name}\n\n"
-        "Return only the email body — no subject line."
-    ),
-    "self_rate_confidence": (
-        "You just drafted this email reply:\n{draft_reply}\n\n"
-        "Rate your confidence that this reply is correct, complete, and appropriate "
-        "on a scale from 0.0 to 1.0.\n"
-        "Return only valid JSON: {{\"confidence_score\": <float>}}"
-    ),
-    "generate_report": (
-        "Generate a professional report using the data below.\n\n"
-        "Report type: {report_type}\n"
-        "Department: {department}\n"
-        "Date range: {date_range}\n\n"
-        "Data:\n{metrics}\n\n"
-        "Structure the report with clear sections and return the full report text."
-    ),
+        "Return only the email body — no subject line."),
+
     "draft_email_attachment": (
-        "Write a short professional email notifying the requester that their "
-        "requested file is ready.\n\n"
+        "Write an email notifying the requester that their file is ready.\n\n"
         "Task: {description}\n"
         "Requester: {requester_name}\n"
         "File: {presentation_title}\n\n"
-        "Keep it to 3-4 sentences. No subject line. No placeholder text."
+        "Return ONLY valid JSON:\n"
+        "{\n"
+        "  \"type\": \"email\",\n"
+        "  \"content\": {\n"
+        "    \"body\": \"<3-4 sentence email>\"\n"
+        "  },\n"
+        "  \"metadata\": {},\n"
+        "  \"confidence\": null\n"
+        "}"
     ),
+
     "draft_expense_status": (
-        "Write a professional email notifying an employee about the status of their expense report.\n\n"
+        "Write a professional email about expense report status.\n\n"
         "Task: {description}\n"
         "Requester: {requester_name}\n"
-        "Report details:\n{metrics}\n\n"
-        "Keep it concise and factual. Confirm the report was reviewed, summarise the outcome, "
-        "and state any next steps if applicable.\n"
-        "No subject line. No placeholder text."
+        "Details:\n{metrics}\n\n"
+        "Return ONLY valid JSON:\n"
+        "{\n"
+        "  \"type\": \"email\",\n"
+        "  \"content\": {\n"
+        "    \"body\": \"<concise status email>\"\n"
+        "  },\n"
+        "  \"metadata\": {},\n"
+        "  \"confidence\": null\n"
+        "}"
     ),
-    "generate_slides": (
+
+    "draft_report_ready": (
+        "Write a professional email notifying the requester that their report is ready.\n\n"
+        "Task: {description}\n"
+        "Requester: {requester_name}\n"
+        "Department: {department}\n"
+        "Report type: {report_type}\n\n"
+        "Structure the email as follows:\n"
+        "- A greeting line\n"
+        "- 1-2 sentences confirming the report was generated and what period it covers\n"
+        "- A sentence letting them know it is attached\n"
+        "- A professional sign-off\n\n"
+        "No subject line. No placeholder text. Return only the email body."
+    ),
+
+  "draft_escalation_brief": (
+    "Write a professional urgent escalation email notifying a reviewer that a task requires their immediate attention.\n\n"
+    "Task: {description}\n"
+    "Department: {department}\n"
+    "Requester: {requester_name}\n"
+    "Priority: {priority_label}\n\n"
+    "Structure the email as follows:\n"
+    "- A greeting line\n"
+    "- 2-3 sentences explaining the escalation and why it needs attention\n"
+    "- A clear call to action\n"
+    "- A professional sign-off\n\n"
+    "No subject line. No placeholder text. Return only the email body."
+),
+    "draft_summary_ready": (
+        "Write a professional email delivering a document summary directly to the requester.\n\n"
+        "Task: {description}\n"
+        "Requester: {requester_name}\n"
+        "Department: {department}\n"
+        "Summary:\n{summary}\n\n"
+        "Structure the email as follows:\n"
+        "- A greeting line\n"
+        "- A sentence confirming the document was processed\n"
+        "- The summary content presented cleanly in the body\n"
+        "- A professional sign-off\n\n"
+        "No subject line. No placeholder text. Return only the email body."
+    ),
+
+    # --------------------------------------------------
+    # REPORTING
+    # --------------------------------------------------
+
+        "generate_report": (
+            "Generate a professional report using the data below.\n\n"
+            "Report type: {report_type}\n"
+            "Department: {department}\n"
+            "Date range: {date_range}\n\n"
+            "Data:\n{metrics}\n\n"
+            "Structure the report with clear sections and return the full report text."
+        ),
+
+    # --------------------------------------------------
+    # PRESENTATIONS
+    # --------------------------------------------------
+
+       "generate_slides": (
         "You are a senior presentation designer. Generate a structured PowerPoint slide deck as valid JSON.\n\n"
         "Task: {description}\n"
         "Department: {department}\n"
@@ -111,7 +202,7 @@ _PROMPTS = {
         "  \"paused_for_clarification\": false\n"
         "}}\n\n"
         "Rules:\n"
-        "- 5 to 8 slides total\n"
+        "- minimum 5 slides max 30 slides total\n"
         "- First slide: layout must be 'title_slide' — executive summary, dark background feel\n"
         "- Last slide: layout must be 'bullets' — next steps or call to action\n"
         "- Use 'stat_callout' for slides with a key metric (revenue, growth %, etc.)\n"
@@ -123,29 +214,24 @@ _PROMPTS = {
         "- If critical information is missing set paused_for_clarification to true and put your question in the first bullet\n"
         "- Return only the JSON object. Any extra text will break the pipeline."
     ),
-    "draft_report_ready": (
-        "Write a professional email notifying the requester that their report is ready.\n\n"
-        "Task: {description}\n"
-        "Requester: {requester_name}\n"
-        "Department: {department}\n"
-        "Report type: {report_type}\n\n"
-        "Keep it to 3-4 sentences. Confirm the report was generated, mention the date range "
-        "it covers, and let them know it is attached.\n"
-        "No subject line. No placeholder text."
-    ),
-    "draft_escalation_brief": (
-        "Write a professional escalation email notifying a reviewer that a task requires their attention.\n\n"
-        "Task: {description}\n"
-        "Department: {department}\n"
-        "Requester: {requester_name}\n"
-        "Priority: {priority_label}\n\n"
-        "Be concise and direct. State what the task is, why it is being escalated, "
-        "and what action is required from the reviewer.\n"
-        "Keep it to 4-5 sentences. No subject line. No placeholder text."
+
+    # --------------------------------------------------
+    # META
+    # --------------------------------------------------
+
+    "self_rate_confidence": (
+        "Evaluate the following output:\n\n{draft_reply}\n\n"
+        "Return ONLY valid JSON:\n"
+        "{\n"
+        "  \"type\": \"confidence\",\n"
+        "  \"content\": {\n"
+        "    \"confidence_score\": <float 0-1>\n"
+        "  },\n"
+        "  \"metadata\": {},\n"
+        "  \"confidence\": null\n"
+        "}"
     ),
 }
-
-
 class LLMGenerator(BaseStep):
     """
     Processor that calls an LLM via OpenRouter and generates or transforms text.
@@ -260,6 +346,7 @@ class LLMGenerator(BaseStep):
         if template_key == "extract_entities":
             ctx["text"] = _find_latest_text(envelope)
 
+            
         return ctx
 
     # ------------------------------------------------------------------
@@ -300,7 +387,7 @@ class LLMGenerator(BaseStep):
             return 3000  # long structured text
 
         if template == "draft_email_reply":
-            return 800  # short email
+            return 1200  # short email
 
         if template == "self_rate_confidence":
             return 100  # tiny JSON

@@ -13,23 +13,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from steps.base_step import BaseStep, StepResult
-from core.envlope import resolve_path
+from core.envelope import resolve_path
 
 
 # Body field names checked in order when scanning prior step data.
-_BODY_KEYS = ("body", 
-              "draft", 
-              "reply_summary", 
-              "draft_reply", 
-              "draft_email_reply", 
-              "email_body", 
-              "generated_reply",
-              "draft_report_ready", 
-              "draft_expense_status",  
-              "draft_summary_ready",  
-              "draft_escalation_email",
-               "rendered",
-            )
+_BODY_KEYS = ("body","email_body","draft_email_reply", "draft_escalation_brief", "draft_report_ready", "draft_summary_ready", "rendered")
 
 
 class EmailDispatcher(BaseStep):
@@ -99,15 +87,17 @@ class EmailDispatcher(BaseStep):
 
     @staticmethod
     def _find_body(envelope: dict) -> str:
-        step_names = list(envelope.get("execution", {}).get("steps", {}).keys())
-        for step_name in reversed(step_names):
-            for key in _BODY_KEYS:
-                try:
-                    return str(resolve_path(envelope, f"execution.steps.{step_name}.data.{key}"))
-                except KeyError:
-                    continue
-        return ""
+        steps = envelope.get("execution", {}).get("steps", {})
+        
 
+        for step in reversed(steps.values()):
+            data = step.get("data", {})
+
+            for key in _BODY_KEYS:
+                if key in data:
+                    return str(data[key])
+
+        return ""
     # ------------------------------------------------------------------
     # Dry-run path
     # ------------------------------------------------------------------
@@ -156,7 +146,7 @@ class EmailDispatcher(BaseStep):
             part.set_payload(Path(attach_path).read_bytes())
             encoders.encode_base64(part)
             part.add_header(
-                "Content-Disposition",
+                "data-Disposition",
                 f'attachment; filename="{Path(attach_path).name}"',
             )
             msg.attach(part)

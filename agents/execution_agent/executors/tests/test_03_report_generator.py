@@ -79,7 +79,7 @@ def test_03_report_generator_confirmed():
     # execution.status == "approval_pending" → gate is skipped → FileDispatcher runs.
     result = runner.execute(paused)
 
-    #pprint.pprint(result)
+    pprint.pprint(result)
 
     assert result["execution"]["agent_name"] == "report_generator"
     assert result["execution"]["status"] == "completed"

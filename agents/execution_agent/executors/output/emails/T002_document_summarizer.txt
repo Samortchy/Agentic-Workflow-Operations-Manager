@@ -1,0 +1,12 @@
+To: bob@company.com
+Generated-at: 2026-05-06T14:37:01.020450+00:00
+
+Dear Bob,
+
+I have processed the quarterly finance report you requested.
+
+Summary: No data was provided for the finance report, resulting in 0 records. The data source was none. It is recommended to collect and submit the required data for future reporting cycles.
+
+Best regards,  
+[Your Name]  
+Finance Department, [Company Name]

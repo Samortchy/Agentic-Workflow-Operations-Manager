@@ -1,6 +1,6 @@
 from pathlib import Path
-from steps.base_step import BaseStep, StepResult
-from core.envelope import resolve_path
+from ..base_step import BaseStep, StepResult
+from ...core.envelope import resolve_path
 
 try:
     from reportlab.lib.pagesizes import A4

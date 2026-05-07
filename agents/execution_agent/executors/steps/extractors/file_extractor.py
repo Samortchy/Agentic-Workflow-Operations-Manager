@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from steps.base_step import BaseStep, StepResult
+from ..base_step import BaseStep, StepResult
 
 
 class FileExtractor(BaseStep):

@@ -3,24 +3,24 @@ import os
 import json
 
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-_TASK_AGENT_DIR = os.path.join(_ROOT, "task_agent")
-_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+# _TASK_AGENT_DIR = os.path.join(_ROOT, "task_agent")
+# _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# When run as `python main_pipeline/pipeline.py`, Python inserts main_pipeline/
-# into sys.path[0].  This causes `import intake_agent` to resolve to
-# main_pipeline/intake_agent.py (a file) instead of the root intake_agent/
-# package, breaking the sub-import.  Remove the script directory first.
-if _THIS_DIR in sys.path:
-    sys.path.remove(_THIS_DIR)
+# # When run as `python main_pipeline/pipeline.py`, Python inserts main_pipeline/
+# # into sys.path[0].  This causes `import intake_agent` to resolve to
+# # main_pipeline/intake_agent.py (a file) instead of the root intake_agent/
+# # package, breaking the sub-import.  Remove the script directory first.
+# if _THIS_DIR in sys.path:
+#     sys.path.remove(_THIS_DIR)
 
 if _ROOT not in sys.path:
-    sys.path.insert(0, _ROOT)
-if _TASK_AGENT_DIR not in sys.path:
-    sys.path.insert(0, _TASK_AGENT_DIR)
+     sys.path.insert(0, _ROOT)
+#if _TASK_AGENT_DIR not in sys.path:
+#     sys.path.insert(0, _TASK_AGENT_DIR)
 
-from main_pipeline.intake_agent import intake_agent
-from main_pipeline.adapter import dict_to_envelope
-from main_pipeline.task_agent import build_agent, run as run_task_agent
+from .intake_agent import intake_agent
+from .adapter import dict_to_envelope
+from .task_agent import build_agent, run as run_task_agent
 from priority_agent.validation import priority_prediction
 from task_agent.envelope import PrioritySection
 

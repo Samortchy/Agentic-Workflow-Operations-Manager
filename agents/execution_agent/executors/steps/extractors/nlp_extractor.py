@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from groq import Groq
-from steps.base_step import BaseStep, StepResult
-from core.envelope import resolve_path
+from ..base_step import BaseStep, StepResult
+from ...core.envelope import resolve_path
 
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")

@@ -4,10 +4,10 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from core.envelope import resolve_path, write_step_result
-from core.step_registry import STEP_REGISTRY
-from core.approval_gate import check as check_approval
-from core.outcome_emitter import emit
+from .envelope import resolve_path, write_step_result
+from .step_registry import STEP_REGISTRY
+from .approval_gate import check as check_approval
+from .outcome_emitter import emit
 
 logger = logging.getLogger(__name__)
 

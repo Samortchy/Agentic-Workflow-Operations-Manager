@@ -11,6 +11,7 @@ Then set API_URL=http://localhost:8000 in your Express environment.
 """
 
 import sys
+import traceback    
 import os
 
 # ── path bootstrap (mirrors pipeline.py) ────────────────────────────────────
@@ -28,7 +29,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from main_pipeline.pipeline import run_pipeline
-from orchestration_agent.orchestrator import Orchestrator
+from execution_agent.orchestration_agent.orchestrator import Orchestrator
 
 _orchestrator = Orchestrator()
 
@@ -110,3 +111,5 @@ def envelopes():
     so Express falls back to MOCK_ENVELOPES gracefully.
     """
     return []
+
+

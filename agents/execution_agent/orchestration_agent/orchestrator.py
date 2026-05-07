@@ -11,7 +11,7 @@ Flow
 4. If the execution agent itself raises, mark the envelope failed and return it.
 """
 
-import sys
+#import sys
 import json
 import logging
 from pathlib import Path
@@ -19,21 +19,21 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
-# ── sys.path bootstrap ────────────────────────────────────────────────────────
-# agents/   → main_pipeline, task_agent, orchestration_agent are importable
-# executors/ → core.* and steps.* packages are importable by the runner
+# # ── sys.path bootstrap ────────────────────────────────────────────────────────
+# # agents/   → main_pipeline, task_agent, orchestration_agent are importable
+# # executors/ → core.* and steps.* packages are importable by the runner
 _AGENTS_DIR    = Path(__file__).parent.parent
 _EXECUTORS_DIR = _AGENTS_DIR / "execution_agent" / "executors"
-_TASK_AGENT_DIR = _AGENTS_DIR / "task_agent"
+# _TASK_AGENT_DIR = _AGENTS_DIR / "task_agent"
 
-for _p in [str(_AGENTS_DIR), str(_TASK_AGENT_DIR), str(_EXECUTORS_DIR)]:
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+# for _p in [str(_AGENTS_DIR), str(_TASK_AGENT_DIR), str(_EXECUTORS_DIR)]:
+#     if _p not in sys.path:
+#         sys.path.insert(0, _p)
 # ─────────────────────────────────────────────────────────────────────────────
 
 from main_pipeline.pipeline import run_pipeline          # Phase 1
-from core.base_agent import ExecutionRunner              # Phase 2 runner
-from orchestration_agent.routing_table import resolve_config
+from ..executors.core.base_agent import ExecutionRunner              # Phase 2 runner
+from .routing_table import resolve_config
 
 _ESCALATION_CONFIG = _EXECUTORS_DIR / "configs" / "01_escalation_router.json"
 _REVIEW_QUEUE_DIR  = _AGENTS_DIR.parent / "output" / "review_queue"

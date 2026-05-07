@@ -38,8 +38,8 @@ Spec compliance:
 
 import sqlite3
 from datetime import datetime, timedelta
-from steps.base_step import BaseStep, StepResult
-from core.envelope import resolve_path
+from ..base_step import BaseStep, StepResult
+from ...core.envelope import resolve_path
 
 
 class AnomalyChecker(BaseStep):

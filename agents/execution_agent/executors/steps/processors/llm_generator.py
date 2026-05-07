@@ -1,8 +1,8 @@
 import json
 import os
 from openai import OpenAI
-from steps.base_step import BaseStep, StepResult
-from core.config import OPENROUTER_API_KEY
+from ..base_step import BaseStep, StepResult
+from ...core.config import OPENROUTER_API_KEY
 
 
 

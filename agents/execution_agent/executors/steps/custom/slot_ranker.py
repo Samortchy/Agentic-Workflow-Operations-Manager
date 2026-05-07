@@ -44,8 +44,8 @@ Spec compliance:
 """
 
 from datetime import datetime
-from steps.base_step import BaseStep, StepResult
-from core.envelope import resolve_path
+from ..base_step import BaseStep, StepResult
+from ...core.envelope import resolve_path
 
 
 class SlotRanker(BaseStep):

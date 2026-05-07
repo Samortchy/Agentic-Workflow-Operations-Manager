@@ -2,7 +2,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateNotFound, UndefinedError
 
-from steps.base_step import BaseStep, StepResult
+from ..base_step import BaseStep, StepResult
 
 
 class TemplateRenderer(BaseStep):

@@ -1,6 +1,6 @@
 import time
-from agents import create_envelope
-from agents import run
+from .agents import create_envelope
+from .agents import run
 import pprint
 
 test_requests = [

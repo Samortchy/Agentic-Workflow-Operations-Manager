@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-from steps.base_step import BaseStep, StepResult
+from ..base_step import BaseStep, StepResult
 
 # Resolve path strings from config filter values.
 # Falls back to simple dot-walking when core.envelope is not yet wired up.

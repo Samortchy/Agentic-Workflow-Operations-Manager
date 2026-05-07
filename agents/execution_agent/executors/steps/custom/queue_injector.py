@@ -43,8 +43,8 @@ import sqlite3
 import uuid
 import json
 from datetime import datetime, timezone
-from steps.base_step import BaseStep, StepResult
-from core.envelope import resolve_path
+from ..base_step import BaseStep, StepResult
+from ...core.envelope import resolve_path
 
 
 class QueueInjector(BaseStep):

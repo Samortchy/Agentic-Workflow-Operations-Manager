@@ -12,8 +12,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
-from steps.base_step import BaseStep, StepResult
-from core.envelope import resolve_path
+from ..base_step import BaseStep, StepResult
+from ...core.envelope import resolve_path
 
 
 # Body field names checked in order when scanning prior step data.

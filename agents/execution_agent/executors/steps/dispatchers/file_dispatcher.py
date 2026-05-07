@@ -5,7 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
-from steps.base_step import BaseStep, StepResult
+from ..base_step import BaseStep, StepResult
 
 
 class FileDispatcher(BaseStep):

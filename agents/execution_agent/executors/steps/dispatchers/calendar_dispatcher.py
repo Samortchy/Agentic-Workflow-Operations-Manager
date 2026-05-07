@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from steps.base_step import BaseStep, StepResult
+from ..base_step import BaseStep, StepResult
 
 
 # Step data keys that carry scheduling outputs from prior steps.

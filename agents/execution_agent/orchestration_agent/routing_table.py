@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 _CONFIGS_DIR = (
     Path(__file__).parent.parent
-    / "execution_agent"
     / "executors"
     / "configs"
 )
@@ -40,16 +39,17 @@ Your only job is to select the best execution agent for the given task.
 Available agents:
 
 1. 01_escalation_router.json
-   Escalates tasks to the right human reviewer via email.
-   Use for: urgent issues, critical incidents, anything that needs manager sign-off.
+   Escalates tasks to a human reviewer when something has gone wrong or needs urgent approval.
+   Use for: failed processes, policy violations, compliance issues, anything explicitly marked as an incident or emergency.
+   Do NOT use for: report generation, presentations, summaries, scheduling, or any routine automated task.
 
 2. 02_document_summarizer.json
    Summarises documents using a map-reduce strategy.
-   Use for: document digests, file summaries, attachment summarisation.
+   Use for: document digests, file summaries, attachment summarisation, quarterly report summaries.
 
 3. 03_report_generator.json
    Generates formatted reports from data and metrics.
-   Use for: report generation, analytics summaries, budget overviews, KPI reports.
+   Use for: report generation, analytics summaries, budget overviews, KPI reports, finance reports.
 
 4. 04_leave_checker.json
    Looks up employee leave balance and answers leave-related questions.
@@ -61,7 +61,8 @@ Available agents:
 
 6. 06_powerpoint_agent.json
    Generates PowerPoint (.pptx) presentation files from an LLM-produced slide spec.
-   Use for: slide decks, strategy presentations, pitch decks, board packs.
+   Use for: slide decks, strategy presentations, pitch decks, board packs, finance reviews, leadership presentations.
+   This is the correct agent whenever a .pptx or presentation file is requested, regardless of audience.
 
 7. 07_meeting_scheduler.json
    Books meetings and sends calendar invites.
@@ -75,16 +76,42 @@ Available agents:
    Coordinates new-hire onboarding workflows.
    Use for: onboarding information requests, new employee setup, onboarding process questions.
 
-Return ONLY a JSON object with exactly these two fields:
+ROUTING RULES (apply in order, stop at first match):
+1. Task mentions creating a presentation, slide deck, or .pptx file → 06_powerpoint_agent.json
+2. Task mentions summarising a document, file, or report → 02_document_summarizer.json
+3. Task mentions generating a report, KPI, analytics, or budget overview → 03_report_generator.json
+4. Task mentions leave, PTO, or time off → 04_leave_checker.json
+5. Task mentions drafting or sending an email → 05_email_agent.json
+6. Task mentions scheduling a meeting or calendar invite → 07_meeting_scheduler.json
+7. Task mentions expense, reimbursement, or cost claim → 08_expense_tracker.json
+8. Task mentions onboarding, new hire, or employee setup → 09_onboarding_coordinator.json
+9. Task is an explicit incident, failure, violation, or needs urgent human approval → 01_escalation_router.json
+10. Nothing matches any of the above → 01_escalation_router.json
+
+VALID CONFIG VALUES — your response MUST use one of these exactly, character for character:
+- 01_escalation_router.json
+- 02_document_summarizer.json
+- 03_report_generator.json
+- 04_leave_checker.json
+- 05_email_agent.json
+- 06_powerpoint_agent.json
+- 07_meeting_scheduler.json
+- 08_expense_tracker.json
+- 09_onboarding_coordinator.json
+
+STRICT OUTPUT RULES:
+- You MUST always return a config value — never return null.
+- The config value MUST exactly match one of the nine filenames listed above.
+- No uppercase, no spaces, no missing .json suffix, no extra characters.
+- Return ONLY this JSON object and nothing else:
+
 {
-  "config": "<filename>.json",
+  "config": "<one of the nine filenames above>",
   "reasoning": "<one sentence explaining your choice>"
 }
 
-If absolutely no agent fits, set "config" to null.
-Return JSON only — no markdown, no extra text.
+No markdown. No backticks. No explanation outside the JSON.
 """.strip()
-
 
 def resolve_config(task_type: str, department: str, envelope: dict) -> Path | None:
     """

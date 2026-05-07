@@ -26,7 +26,7 @@ def dict_to_envelope(intake_dict: dict) -> Envelope:
         task_type=i["task_type"],
         is_autonomous=i["isAutonomous"],   # camelCase → snake_case
         reasoning=i["reasoning"],
-        confidence=i["confidence"],
+        confidence=float(i["confidence"]),
         processed_at=i["processed_at"],
     )
 

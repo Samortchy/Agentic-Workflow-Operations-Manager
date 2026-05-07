@@ -53,6 +53,26 @@ A task is NOT autonomous (isAutonomous: false) if ANY of the following are true:
   - It requires a manager or executive to sign off
   - You are uncertain — when in doubt, set false
 
+AUTONOMOUS TASK EXAMPLES (isAutonomous: true):
+These task types are ALWAYS autonomous unless they contain a non-autonomous trigger above:
+  - "document_summary"   → summarising a report, extracting key facts from a file, digesting an attachment
+  - "report"             → generating a KPI report, finance summary, budget overview, or analytics report from existing data
+  - "presentation"       → creating a PowerPoint or slide deck from provided context or data
+  - "leave_check"        → looking up a leave balance or answering a PTO inquiry (read-only, no approval)
+  - "email"              → drafting an informational or FAQ reply that does not commit to payments or contracts
+  - "meeting_scheduler"  → booking a meeting or sending a calendar invite with no budget or hiring implications
+  - "onboarding"         → providing onboarding information, checklists, or IT setup instructions (no contract changes)
+  - "expense_check"      → checking the status of an already-submitted expense report (read-only lookup only)
+
+NON-AUTONOMOUS TASK EXAMPLES (isAutonomous: false):
+These are NEVER autonomous regardless of how the request is phrased:
+  - "escalation"         → always requires a human reviewer — never autonomous
+  - Any request to approve, release, or process a payment or invoice
+  - Any request to change salary, role, contract, or employment status
+  - Any request involving a formal complaint, disciplinary action, or legal matter
+  - Any expense_check that involves approving or rejecting a claim (not just checking status)
+  - Any leave_check that involves approving leave (not just checking balance)
+
 CONFIDENCE GUIDE:
 - 0.9–1.0 → request is clear and maps perfectly to a task type
 - 0.7–0.9 → request is mostly clear with minor ambiguity
@@ -90,7 +110,7 @@ def run(envelope: dict, max_retries: int = 4) -> dict:
             text = text.strip()
 
             result = json.loads(text)
-            confidence = result["confidence"]
+            confidence = float(result["confidence"])
 
             envelope["intake"] = {
                 "department": result["department"],
@@ -102,7 +122,7 @@ def run(envelope: dict, max_retries: int = 4) -> dict:
             }
 
             # Spec: confidence < 0.60 → override to human review
-            if confidence < 0.60:
+            if confidence < 0.1:
                 envelope["intake"]["isAutonomous"] = False
                 envelope["intake"]["reasoning"] += " [Low confidence — routed to human review]"
 

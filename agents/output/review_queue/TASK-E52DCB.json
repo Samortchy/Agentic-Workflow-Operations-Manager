@@ -1,0 +1,40 @@
+{
+  "envelope_id": "ENV-DE240E",
+  "raw_text": "Create a PowerPoint presentation (.pptx file) for the Q1 2026 Finance Strategy Review. Department: Finance. Requester: alice@company.com. Deadline: 2026-05-10. Include slides for title, agenda, KPI dashboard, revenue analysis, and strategic recommendations.",
+  "received_at": "2026-05-07T20:40:21.679894+00:00",
+  "errors": [],
+  "intake": {
+    "department": "Finance",
+    "task_type": "presentation",
+    "isAutonomous": false,
+    "reasoning": "The request involves creating a presentation for a strategic review, which may require human input and validation to ensure accuracy and relevance.",
+    "confidence": 0.9,
+    "processed_at": "2026-05-07T20:40:22.269731+00:00"
+  },
+  "task": {
+    "task_id": "TASK-E52DCB",
+    "title": "Q1 Finance Strategy Review",
+    "description": "Create a PowerPoint presentation for the Q1 2026 Finance Strategy Review, including slides for title, agenda, KPI dashboard, revenue analysis, and strategic recommendations",
+    "department": "Finance",
+    "isAutonomous": false,
+    "task_type": "presentation",
+    "requester_name": "alice@company.com",
+    "stated_deadline": "2026-05-10",
+    "action_required": "Create a PowerPoint presentation",
+    "success_criteria": "A complete .pptx file is submitted",
+    "structured_at": "2026-05-07T20:40:28.210176+00:00"
+  },
+  "priority": {
+    "priority_score": 2,
+    "priority_label": "medium",
+    "confidence": 0.998,
+    "model_version": "1.0.0",
+    "top_features_used": [],
+    "scored_at": "2026-05-07T20:40:29Z"
+  },
+  "execution": {
+    "status": "queued_for_review",
+    "review_reason": "The request involves creating a presentation for a strategic review, which may require human input and validation to ensure accuracy and relevance.",
+    "queued_at": "2026-05-07T20:40:29.595429+00:00"
+  }
+}

@@ -58,17 +58,17 @@ def run_pipeline(raw_text: str) -> dict:
     return envelope.to_dict()
 
 
-if __name__ == "__main__":
-    inbox_dir = os.path.join(_ROOT, "inbox")
+# if __name__ == "__main__":
+#     inbox_dir = os.path.join(_ROOT, "inbox")
 
-    for filename in ["email_001.txt", "email_002.txt"]:
-        filepath = os.path.join(inbox_dir, filename)
-        with open(filepath, "r", encoding="utf-8") as f:
-            raw_text = f.read()
+#     for filename in ["email_001.txt", "email_002.txt"]:
+#         filepath = os.path.join(inbox_dir, filename)
+#         with open(filepath, "r", encoding="utf-8") as f:
+#             raw_text = f.read()
 
-        print(f"\n{'=' * 60}")
-        print(f"Processing: {filename}")
-        print("=" * 60)
+#         print(f"\n{'=' * 60}")
+#         print(f"Processing: {filename}")
+#         print("=" * 60)
 
-        result = run_pipeline(raw_text)
-        print(json.dumps(result, indent=2))
+#         result = run_pipeline(raw_text)
+#         print(json.dumps(result, indent=2))

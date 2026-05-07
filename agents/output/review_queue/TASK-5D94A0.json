@@ -1,0 +1,40 @@
+{
+  "envelope_id": "ENV-36EE1F",
+  "raw_text": "Please create a PowerPoint presentation for the Q1 2026 Finance department strategy review. The audience is senior leadership. The purpose is to present quarterly financial results and upcoming strategic initiatives. The key message is that we exceeded revenue targets by 12% while staying within budget. Requester is alice@company.com",
+  "received_at": "2026-05-07T20:19:47.206939+00:00",
+  "errors": [],
+  "intake": {
+    "department": "Finance",
+    "task_type": "presentation",
+    "isAutonomous": "false",
+    "reasoning": "The request involves creating a presentation for senior leadership, which requires review and approval, making it non-autonomous.",
+    "confidence": 0.9,
+    "processed_at": "2026-05-07T20:19:48.095423+00:00"
+  },
+  "task": {
+    "task_id": "TASK-5D94A0",
+    "title": "Q1 Finance Strategy Review",
+    "description": "Create a PowerPoint presentation for senior leadership to review Q1 2026 financial results and strategic initiatives, highlighting a 12% revenue target exceedance while staying within budget",
+    "department": "Finance",
+    "isAutonomous": "false",
+    "task_type": "presentation",
+    "requester_name": "Alice",
+    "stated_deadline": "none stated",
+    "action_required": "Create a presentation",
+    "success_criteria": "A completed PowerPoint presentation is delivered to senior leadership",
+    "structured_at": "2026-05-07T20:19:51.224080+00:00"
+  },
+  "priority": {
+    "priority_score": 1,
+    "priority_label": "low",
+    "confidence": 0.999,
+    "model_version": "1.0.0",
+    "top_features_used": [],
+    "scored_at": "2026-05-07T20:19:52Z"
+  },
+  "execution": {
+    "status": "queued_for_review",
+    "review_reason": "The request involves creating a presentation for senior leadership, which requires review and approval, making it non-autonomous.",
+    "queued_at": "2026-05-07T20:19:52.993974+00:00"
+  }
+}

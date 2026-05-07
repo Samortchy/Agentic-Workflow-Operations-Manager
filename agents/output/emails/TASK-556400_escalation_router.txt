@@ -1,0 +1,11 @@
+To: alice@company.com
+Generated-at: 2026-05-07T21:30:03.823028+00:00
+
+Dear Reviewer,
+
+The creation of the Q1 2026 Finance Strategy Review PowerPoint presentation has been escalated to you as it requires your immediate attention. This task is high priority and needs to be completed urgently to ensure timely review and approval, as it includes critical slides such as title, agenda, KPI dashboard, revenue analysis, and strategic recommendations. Your prompt review is essential to meet the upcoming deadline.
+
+Please review and complete the presentation as soon as possible, and notify me at alice@company.com upon completion.
+
+Best regards,
+alice@company.com

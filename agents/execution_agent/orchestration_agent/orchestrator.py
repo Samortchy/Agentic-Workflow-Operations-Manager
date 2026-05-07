@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 # # ── sys.path bootstrap ────────────────────────────────────────────────────────
 # # agents/   → main_pipeline, task_agent, orchestration_agent are importable
 # # executors/ → core.* and steps.* packages are importable by the runner
-_AGENTS_DIR    = Path(__file__).parent.parent
-_EXECUTORS_DIR = _AGENTS_DIR / "execution_agent" / "executors"
+_AGENTS_DIR    = Path(__file__).parent
+_EXECUTORS_DIR = _AGENTS_DIR  / "executors"
 # _TASK_AGENT_DIR = _AGENTS_DIR / "task_agent"
 
 # for _p in [str(_AGENTS_DIR), str(_TASK_AGENT_DIR), str(_EXECUTORS_DIR)]:

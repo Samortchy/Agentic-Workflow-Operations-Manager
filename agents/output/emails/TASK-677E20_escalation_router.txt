@@ -1,0 +1,11 @@
+To: alice@company.com
+Generated-at: 2026-05-07T20:45:23.416791+00:00
+
+Dear Reviewer,
+
+The creation of the Q1 2026 Finance Strategy Review PowerPoint presentation has been escalated to you as it requires your immediate attention to meet the upcoming deadline. The presentation must include essential slides such as title, agenda, KPI dashboard, revenue analysis, and strategic recommendations, and your prompt review is crucial to ensure its completion. Your timely input will enable the Finance department to finalize the presentation and proceed with the review process.
+
+Please review and provide feedback on the presentation by the end of the day to ensure timely completion. 
+
+Best regards,
+alice@company.com

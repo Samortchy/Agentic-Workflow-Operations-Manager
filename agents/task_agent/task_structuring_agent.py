@@ -69,7 +69,7 @@ class TaskStructuringAgent:
             return envelope
 
         # Confidence warning
-        if envelope.intake.confidence < self.confidence_threshold:
+        if float(envelope.intake.confidence) < float(self.confidence_threshold):
             logger.warning(
                 "[%s] Low intake confidence %.2f",
                 self.AGENT_NAME,

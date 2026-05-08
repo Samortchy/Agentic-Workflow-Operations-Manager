@@ -30,6 +30,7 @@ from pydantic import BaseModel
 
 from main_pipeline.pipeline import run_pipeline
 from execution_agent.orchestration_agent.orchestrator import Orchestrator
+from execution_agent.executors.core.base_agent import ExecutionRunner
 
 _orchestrator = Orchestrator()
 
@@ -97,6 +98,67 @@ def orchestrate(body: PipelineRequest):
 
     try:
         result = _orchestrator.run(body.raw_text)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return result
+
+
+_AGENT_CONFIG_MAP = {
+    "escalation_router":      "01_escalation_router.json",
+    "document_summarizer":    "02_document_summarizer.json",
+    "report_generator":       "03_report_generator.json",
+    "leave_checker":          "04_leave_checker.json",
+    "email_agent":            "05_email_agent.json",
+    "powerpoint_agent":       "06_powerpoint_agent.json",
+    "meeting_scheduler":      "07_meeting_scheduler.json",
+    "expense_tracker":        "08_expense_tracker.json",
+    "onboarding_coordinator": "09_onboarding_coordinator.json",
+}
+
+_CONFIGS_DIR = os.path.join(
+    _ROOT, "execution_agent", "executors", "configs"
+)
+
+
+@app.post("/api/confirm")
+def confirm(envelope: dict):
+    """
+    Resume an approval_pending envelope after the user confirms in the UI.
+
+    The body must be the full envelope dict previously returned by /api/orchestrate
+    with execution.status = "approval_pending".  The runner skips the approval gate
+    on re-entry (because status is already "approval_pending") and continues from
+    the first dispatcher step onward.
+
+    Returns the completed envelope with execution.status = "completed".
+    """
+    status = envelope.get("execution", {}).get("status")
+    if status != "approval_pending":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Envelope is not approval_pending (got '{status}'). "
+                   "Only approval_pending envelopes can be confirmed.",
+        )
+
+    agent_name = envelope.get("execution", {}).get("agent_name", "")
+    config_filename = _AGENT_CONFIG_MAP.get(agent_name)
+    if not config_filename:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown agent_name '{agent_name}' — cannot resolve config.",
+        )
+
+    config_path = os.path.join(_CONFIGS_DIR, config_filename)
+    if not os.path.exists(config_path):
+        raise HTTPException(
+            status_code=500,
+            detail=f"Config file not found: {config_path}",
+        )
+
+    try:
+        runner = ExecutionRunner(config_path)
+        result = runner.execute(envelope)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 

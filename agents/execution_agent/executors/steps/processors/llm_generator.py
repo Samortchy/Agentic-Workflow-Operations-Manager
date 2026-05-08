@@ -322,9 +322,14 @@ class LLMGenerator(BaseStep):
             "metrics":        "",
         }
 
+        if "tone" in config:
+            ctx["tone"] = config["tone"]
+
         if "tone_rules" in config:
             dept = task.get("department", "")
             ctx["tone"] = config["tone_rules"].get(dept, "professional")
+
+        ctx["sender_name"] = "Office Automation System"
 
         if "fields" in config:
             ctx["fields"] = ", ".join(config["fields"])
@@ -381,10 +386,10 @@ class LLMGenerator(BaseStep):
 
         # Prompt-based rules
         if template == "generate_slides":
-            return 3500  # large JSON output
+            return 2244  # large JSON output
 
         if template == "generate_report":
-            return 3000  # long structured text
+            return 2244  # long structured text
 
         if template == "draft_email_reply":
             return 1200  # short email

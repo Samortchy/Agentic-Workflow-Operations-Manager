@@ -146,7 +146,7 @@ class EmailDispatcher(BaseStep):
             part.set_payload(Path(attach_path).read_bytes())
             encoders.encode_base64(part)
             part.add_header(
-                "data-Disposition",
+                "Content-Disposition",
                 f'attachment; filename="{Path(attach_path).name}"',
             )
             msg.attach(part)

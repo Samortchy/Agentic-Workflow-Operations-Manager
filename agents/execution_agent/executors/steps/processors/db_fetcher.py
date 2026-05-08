@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 from pathlib import Path
 
@@ -16,7 +17,12 @@ except ImportError:
             obj = obj.get(part)
         return obj
 
-_DB_PATH = Path("data/execution_agent.db")
+logger = logging.getLogger(__name__)
+
+_DB_PATH = Path("data/office.db")
+
+# Envelope sections searched (in order) when resolving a match_on field name.
+_MATCH_ON_SECTIONS = ("intake", "task", "priority")
 
 
 class DBFetcher(BaseStep):
@@ -34,8 +40,12 @@ class DBFetcher(BaseStep):
     output_field : str   Key used in StepResult.data for the rows list (default: "rows").
     columns      : list  Columns to SELECT (default: all — ["*"]).
     filters      : dict  Column → value pairs for WHERE clause.
-                         Values that start with "execution." are treated as envelope
-                         path references and resolved at runtime via resolve_path().
+                         Values containing "." are treated as envelope dot-path references
+                         and resolved at runtime. Literal values are used as-is.
+    match_on     : list  Alternative to filters. List of field names whose values are
+                         automatically resolved from the envelope's intake/task/priority
+                         sections and used as equality filters. Use this when the filter
+                         values live in the envelope rather than being hardcoded.
     """
 
     def run(self, envelope: dict, config: dict) -> StepResult:
@@ -46,7 +56,14 @@ class DBFetcher(BaseStep):
 
             output_field = config.get("output_field", "rows")
             columns = config.get("columns", ["*"])
-            raw_filters = config.get("filters", {})
+
+            # Support both 'filters' (explicit map) and 'match_on' (field list resolved
+            # from the envelope). 'filters' takes priority if both are present.
+            raw_filters = config.get("filters") or {}
+            if not raw_filters and "match_on" in config:
+                raw_filters = self._build_filters_from_match_on(
+                    config["match_on"], envelope
+                )
 
             resolved_filters = self._resolve_filters(raw_filters, envelope)
             rows = self._query(table, columns, resolved_filters)
@@ -65,12 +82,41 @@ class DBFetcher(BaseStep):
     # ------------------------------------------------------------------
 
     @staticmethod
+    def _build_filters_from_match_on(fields: list, envelope: dict) -> dict:
+        """
+        For each field name in match_on, search the standard envelope sections
+        (intake → task → priority) and use the first value found as the filter value.
+        Fields with no match in the envelope are skipped.
+        """
+        filters = {}
+        for field in fields:
+            for section in _MATCH_ON_SECTIONS:
+                val = envelope.get(section, {}).get(field)
+                if val is not None:
+                    filters[field] = val
+                    break
+            else:
+                logger.warning(
+                    "DBFetcher: match_on field '%s' not found in envelope sections %s — skipped",
+                    field, _MATCH_ON_SECTIONS,
+                )
+        return filters
+
+    @staticmethod
     def _resolve_filters(filters: dict, envelope: dict) -> dict:
+        """
+        Resolve envelope path references in filter values.
+        A value is treated as a path reference only when it contains '.' AND
+        resolving it against the envelope succeeds. Plain strings are used as-is.
+        """
         resolved = {}
         for col, value in filters.items():
             if isinstance(value, str) and "." in value:
-                # Treat as an envelope path reference and resolve it.
-                resolved[col] = _resolve_path(envelope, value)
+                try:
+                    resolved[col] = _resolve_path(envelope, value)
+                except (KeyError, TypeError):
+                    # Path didn't resolve — use the literal string value
+                    resolved[col] = value
             else:
                 resolved[col] = value
         return resolved
@@ -78,6 +124,11 @@ class DBFetcher(BaseStep):
     @staticmethod
     def _query(table: str, columns: list, filters: dict) -> list:
         if not _DB_PATH.exists():
+            logger.warning(
+                "DBFetcher: database not found at '%s' — returning empty result set. "
+                "Run seed_db.py to initialise the database.",
+                _DB_PATH,
+            )
             return []
 
         col_clause = ", ".join(columns) if columns != ["*"] else "*"

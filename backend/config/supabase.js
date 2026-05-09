@@ -3,6 +3,7 @@
 // company context must be set via setCompanyContext middleware before any query
 
 const { createClient } = require('@supabase/supabase-js');
+const ws              = require('ws');
 
 const supabaseUrl  = process.env.SUPABASE_URL;
 const supabaseAnon = process.env.SUPABASE_ANON_KEY;
@@ -15,7 +16,8 @@ const supabase = createClient(supabaseUrl, supabaseAnon, {
     auth: {
         autoRefreshToken: false,
         persistSession:   false
-    }
+    },
+    realtime: { transport: ws },
 });
 
 module.exports = supabase;

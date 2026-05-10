@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Create workspace', apiBase }) %>
+<body>
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div style="width:100%;max-width:480px;">
+
+      <div style="text-align:center;margin-bottom:40px;">
+        <h1 style="font-family:'DM Serif Display',serif;font-size:32px;color:#FCF3E3;margin:0 0 6px;">AWOM</h1>
+        <p style="font-size:12px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;margin:0;">Set up your workspace</p>
+      </div>
+
+      <div class="section-card" style="padding:32px;">
+        <h2 style="font-size:18px;font-weight:500;color:#FCF3E3;margin:0 0 6px;">Create your company workspace</h2>
+        <p style="font-size:13px;color:#8DD3CE;margin:0 0 28px;">You'll be the administrator with full access.</p>
+
+        <div id="error-msg" style="display:none;background:rgba(224,82,82,0.1);border:1px solid #E05252;border-radius:4px;padding:10px 14px;font-size:13px;color:#E05252;margin-bottom:20px;"></div>
+
+        <form id="register-form">
+          <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 14px;">Company</p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div>
+              <label style="display:block;font-size:12px;color:#8DD3CE;margin-bottom:6px;">Company Name</label>
+              <input type="text" id="companyName" class="input-field" placeholder="Acme Corp" required />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;color:#8DD3CE;margin-bottom:6px;">Domain</label>
+              <input type="text" id="domain" class="input-field" placeholder="acme.com" required />
+            </div>
+          </div>
+
+          <div style="margin-bottom:24px;">
+            <label style="display:block;font-size:12px;color:#8DD3CE;margin-bottom:6px;">Allowed Email Domains <span style="opacity:.5;">(comma-separated)</span></label>
+            <input type="text" id="emailDomains" class="input-field" placeholder="acme.com, acme.co.uk" />
+          </div>
+
+          <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 14px;border-top:1px solid #0A5A7C;padding-top:20px;">Your Account</p>
+
+          <div style="margin-bottom:14px;">
+            <label style="display:block;font-size:12px;color:#8DD3CE;margin-bottom:6px;">Full Name</label>
+            <input type="text" id="name" class="input-field" placeholder="Jane Smith" required />
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div>
+              <label style="display:block;font-size:12px;color:#8DD3CE;margin-bottom:6px;">Work Email</label>
+              <input type="email" id="email" class="input-field" placeholder="jane@acme.com" required />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;color:#8DD3CE;margin-bottom:6px;">Department</label>
+              <select id="department" class="input-field">
+                <option value="IT">IT</option>
+                <option value="HR">HR</option>
+                <option value="Finance">Finance</option>
+                <option value="cross-dept">Cross-dept</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="display:block;font-size:12px;color:#8DD3CE;margin-bottom:6px;">Role / Title</label>
+            <input type="text" id="role" class="input-field" placeholder="Operations Manager" required />
+          </div>
+
+          <div style="margin-bottom:28px;">
+            <label style="display:block;font-size:12px;color:#8DD3CE;margin-bottom:6px;">Password</label>
+            <input type="password" id="password" class="input-field" placeholder="Min. 8 characters" required minlength="8" />
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn-primary" style="width:100%;">Create workspace</button>
+        </form>
+      </div>
+
+      <p style="text-align:center;font-size:13px;color:#8DD3CE;margin-top:20px;">
+        Already have a workspace?
+        <a href="/login" style="color:#F4A258;text-decoration:none;font-weight:500;">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    if (Auth.isLoggedIn()) window.location.href = '/';
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const errEl = document.getElementById('error-msg');
+      btn.disabled = true;
+      btn.textContent = 'Creating…';
+      errEl.style.display = 'none';
+
+      const domainRaw = document.getElementById('emailDomains').value;
+      const emailDomains = domainRaw ? domainRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      const body = {
+        companyName: document.getElementById('companyName').value.trim(),
+        domain:      document.getElementById('domain').value.trim(),
+        email_domains: emailDomains,
+        name:        document.getElementById('name').value.trim(),
+        email:       document.getElementById('email').value.trim(),
+        password:    document.getElementById('password').value,
+        role:        document.getElementById('role').value.trim(),
+        department:  document.getElementById('department').value,
+      };
+
+      try {
+        const res = await fetch(`${window.API_BASE}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errEl.textContent = data.error || data.errors?.[0]?.msg || 'Registration failed.';
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Create workspace';
+          return;
+        }
+
+        Auth.setTokens(data.access_token, data.refresh_token);
+        if (data.user) Auth.setUser(data.user);
+        window.location.href = '/';
+      } catch (err) {
+        errEl.textContent = 'Could not reach server.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Create workspace';
+      }
+    });
+  </script>
+</body>
+</html>

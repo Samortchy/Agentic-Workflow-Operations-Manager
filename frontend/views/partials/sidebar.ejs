@@ -1,0 +1,79 @@
+<aside style="width:240px;min-width:240px;background:#013D5A;border-right:1px solid #0A5A7C;display:flex;flex-direction:column;height:100vh;position:sticky;top:0;">
+
+  <!-- Logo -->
+  <div style="padding:24px 20px 20px;border-bottom:1px solid #0A5A7C;">
+    <span style="font-family:'DM Serif Display',serif;font-size:20px;color:#FCF3E3;letter-spacing:-0.01em;">AWOM</span>
+    <span style="display:block;font-size:10px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;">Workflow Platform</span>
+  </div>
+
+  <!-- Nav -->
+  <nav style="flex:1;padding:8px 0;overflow-y:auto;">
+
+    <a href="/" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;font-weight:500;text-decoration:none;transition:background 120ms;<%= page==='dashboard' ? 'color:#F4A258;border-left:2px solid #F4A258;padding-left:18px;' : 'color:#FCF3E3;' %>">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;">
+        <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/>
+        <rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/>
+        <rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/>
+        <rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+      Dashboard
+    </a>
+
+    <a href="/tasks" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;font-weight:500;text-decoration:none;transition:background 120ms;<%= page==='tasks' ? 'color:#F4A258;border-left:2px solid #F4A258;padding-left:18px;' : 'color:#FCF3E3;' %>">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;">
+        <path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      Tasks
+    </a>
+
+    <a id="nav-approvals" href="/approvals" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;font-weight:500;text-decoration:none;transition:background 120ms;<%= page==='approvals' ? 'color:#F4A258;border-left:2px solid #F4A258;padding-left:18px;' : 'color:#FCF3E3;' %>">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;">
+        <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Approvals
+      <span id="approvals-badge" style="display:none;margin-left:auto;background:#F4A258;color:#011F30;font-size:10px;font-family:'JetBrains Mono',monospace;padding:1px 6px;border-radius:9999px;"></span>
+    </a>
+
+    <a id="nav-employees" href="/employees" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;font-weight:500;text-decoration:none;transition:background 120ms;<%= page==='employees' ? 'color:#F4A258;border-left:2px solid #F4A258;padding-left:18px;' : 'color:#FCF3E3;' %>">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;">
+        <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      Employees
+    </a>
+
+    <a href="/audit-logs" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;font-weight:500;text-decoration:none;transition:background 120ms;<%= page==='audit-logs' ? 'color:#F4A258;border-left:2px solid #F4A258;padding-left:18px;' : 'color:#FCF3E3;' %>">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;">
+        <path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      Audit Logs
+    </a>
+
+    <a id="nav-agent-configs" href="/agent-configs" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;font-weight:500;text-decoration:none;transition:background 120ms;<%= page==='agent-configs' ? 'color:#F4A258;border-left:2px solid #F4A258;padding-left:18px;' : 'color:#FCF3E3;' %>">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;">
+        <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      Agent Configs
+    </a>
+
+  </nav>
+
+  <!-- User info -->
+  <div style="padding:16px 20px;border-top:1px solid #0A5A7C;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="width:32px;height:32px;border-radius:4px;background:#0A5A7C;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;" id="sidebar-avatar">—</div>
+      <div style="min-width:0;">
+        <p style="margin:0;font-size:13px;font-weight:500;color:#FCF3E3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="sidebar-name">Loading…</p>
+        <p style="margin:0;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="sidebar-email"></p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:10px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;" id="sidebar-level"></span>
+      <button onclick="Auth.logout()" style="font-size:11px;color:#8DD3CE;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;" onmouseover="this.style.color='#FCF3E3'" onmouseout="this.style.color='#8DD3CE'">Sign out</button>
+    </div>
+  </div>
+
+</aside>

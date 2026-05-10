@@ -33,7 +33,8 @@
       "Bash(pkill -f \"uvicorn api:app\")",
       "PowerShell(netstat *)",
       "PowerShell(Get-Process *)",
-      "Bash(node -e \"require\\('./app'\\); console.log\\('app loads ok'\\)\")"
+      "Bash(node -e \"require\\('./app'\\); console.log\\('app loads ok'\\)\")",
+      "PowerShell(node -e $script)"
     ]
   }
 }

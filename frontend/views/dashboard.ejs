@@ -1,45 +1,84 @@
-<%- include('partials/header', { title: 'Pipeline Monitor' }) %>
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Dashboard', apiBase }) %>
+<body>
+  <div style="display:flex;height:100vh;overflow:hidden;">
+    <%- include('partials/sidebar', { page }) %>
 
-<div class="min-h-screen flex flex-col">
-
-  <!-- Stats bar -->
-  <div id="stats-bar" class="border-b border-[rgba(148,163,184,0.08)] bg-navy-900" style="min-height:56px"></div>
-
-  <div class="flex-1 p-6">
-
-    <!-- Page header + sort -->
-    <div class="flex items-start justify-between mb-5">
-      <div>
-        <h1 class="heading-display text-xl text-white">Pipeline Monitor</h1>
-        <p id="envelope-meta" class="text-xs text-slate-500 font-mono mt-1">— envelopes · polling every 5s</p>
+    <main style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+      <div style="padding:20px 32px;border-bottom:1px solid #0A5A7C;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#011F30;position:sticky;top:0;z-index:10;">
+        <h1 style="font-family:'DM Serif Display',serif;font-size:22px;color:#FCF3E3;margin:0;">Dashboard</h1>
+        <span style="font-size:12px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;" id="topbar-date"></span>
       </div>
-      <div class="flex items-center gap-1">
-        <span class="text-[10px] font-mono text-slate-600 mr-1">SORT</span>
-        <button data-sort="newest"     class="sort-btn active-sort text-[10px] font-mono px-2 py-1 rounded transition-all">NEWEST</button>
-        <button data-sort="priority"   class="sort-btn text-[10px] font-mono px-2 py-1 rounded transition-all">PRIORITY</button>
-        <button data-sort="department" class="sort-btn text-[10px] font-mono px-2 py-1 rounded transition-all">DEPT</button>
+
+      <div style="padding:32px;flex:1;">
+
+        <!-- Stat cards -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;">
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Total Tasks</p>
+            <p style="font-family:'DM Serif Display',serif;font-size:36px;color:#FCF3E3;margin:0;line-height:1;" id="stat-total">—</p>
+          </div>
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Pending Approvals</p>
+            <p style="font-family:'DM Serif Display',serif;font-size:36px;color:#F4A258;margin:0;line-height:1;" id="stat-approvals">—</p>
+          </div>
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">In Progress</p>
+            <p style="font-family:'DM Serif Display',serif;font-size:36px;color:#8DD3CE;margin:0;line-height:1;" id="stat-active">—</p>
+          </div>
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Completed Today</p>
+            <p style="font-family:'DM Serif Display',serif;font-size:36px;color:#5BC26A;margin:0;line-height:1;" id="stat-completed">—</p>
+          </div>
+        </div>
+
+        <!-- Main grid -->
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;">
+
+          <!-- Recent Tasks -->
+          <div class="section-card">
+            <div style="padding:16px 20px;border-bottom:1px solid #0A5A7C;display:flex;align-items:center;justify-content:space-between;">
+              <h2 style="font-size:14px;font-weight:600;color:#FCF3E3;margin:0;">Recent Tasks</h2>
+              <a href="/tasks" style="font-size:12px;color:#8DD3CE;text-decoration:none;font-family:'JetBrains Mono',monospace;letter-spacing:0.03em;" onmouseover="this.style.color='#F4A258'" onmouseout="this.style.color='#8DD3CE'">All tasks →</a>
+            </div>
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="border-bottom:1px solid #0A5A7C;">
+                    <th style="padding:10px 20px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">ID</th>
+                    <th style="padding:10px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">Type</th>
+                    <th style="padding:10px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">Status</th>
+                    <th style="padding:10px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">Priority</th>
+                    <th style="padding:10px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">Dept</th>
+                    <th style="padding:10px 20px;text-align:right;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">Created</th>
+                  </tr>
+                </thead>
+                <tbody id="tasks-body">
+                  <tr><td colspan="6" style="padding:40px;text-align:center;color:#8DD3CE;font-size:13px;">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pending Approvals -->
+          <div class="section-card">
+            <div style="padding:16px 20px;border-bottom:1px solid #0A5A7C;display:flex;align-items:center;justify-content:space-between;">
+              <h2 style="font-size:14px;font-weight:600;color:#FCF3E3;margin:0;">Pending Approvals</h2>
+              <a href="/approvals" style="font-size:12px;color:#8DD3CE;text-decoration:none;font-family:'JetBrains Mono',monospace;" onmouseover="this.style.color='#F4A258'" onmouseout="this.style.color='#8DD3CE'">All →</a>
+            </div>
+            <div id="approvals-list" style="padding:4px 0;">
+              <p style="padding:20px;color:#8DD3CE;font-size:13px;margin:0;">Loading…</p>
+            </div>
+          </div>
+
+        </div>
       </div>
-    </div>
-
-    <!-- Filter pills -->
-    <div class="flex items-center gap-1.5 mb-5 flex-wrap">
-      <button data-filter="all"        class="filter-btn active-filter text-[10px] font-mono px-2.5 py-1 rounded-full border transition-all">ALL</button>
-      <button data-filter="IT"         class="filter-btn text-[10px] font-mono px-2.5 py-1 rounded-full border transition-all">IT</button>
-      <button data-filter="HR"         class="filter-btn text-[10px] font-mono px-2.5 py-1 rounded-full border transition-all">HR</button>
-      <button data-filter="Finance"    class="filter-btn text-[10px] font-mono px-2.5 py-1 rounded-full border transition-all">FIN</button>
-      <button data-filter="autonomous" class="filter-btn text-[10px] font-mono px-2.5 py-1 rounded-full border transition-all">AUTO</button>
-      <button data-filter="review"     class="filter-btn text-[10px] font-mono px-2.5 py-1 rounded-full border transition-all">REVIEW</button>
-      <span id="shown-count" class="text-slate-700 text-[10px] font-mono ml-1"></span>
-    </div>
-
-    <!-- Cards grid -->
-    <div id="cards-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-3"></div>
-
+    </main>
   </div>
-</div>
 
-<script>window.INITIAL_ENVELOPES = <%- JSON.stringify(envelopes) %>;</script>
-<%- include('partials/footer') %>
-<script src="/js/dashboard.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/mock-data.js"></script>
+  <script src="/js/dashboard.js"></script>
 </body>
 </html>

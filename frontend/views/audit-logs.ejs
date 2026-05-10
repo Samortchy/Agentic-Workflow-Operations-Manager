@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Audit Logs', apiBase }) %>
+<body>
+  <div style="display:flex;height:100vh;overflow:hidden;">
+    <%- include('partials/sidebar', { page }) %>
+
+    <main style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+      <div style="padding:20px 32px;border-bottom:1px solid #0A5A7C;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#011F30;position:sticky;top:0;z-index:10;">
+        <h1 style="font-family:'DM Serif Display',serif;font-size:22px;color:#FCF3E3;margin:0;">Audit Logs</h1>
+        <span style="font-size:12px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;" id="log-count"></span>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:16px 32px;border-bottom:1px solid #0A5A7C;display:flex;align-items:center;gap:12px;flex-shrink:0;background:#011F30;flex-wrap:wrap;">
+        <select id="filter-agent" class="input-field" style="width:180px;" onchange="loadLogs()">
+          <option value="">All agents</option>
+          <option value="escalation_router">escalation_router</option>
+          <option value="document_summarizer">document_summarizer</option>
+          <option value="report_generator">report_generator</option>
+          <option value="leave_checker">leave_checker</option>
+          <option value="email_agent">email_agent</option>
+          <option value="powerpoint_agent">powerpoint_agent</option>
+          <option value="meeting_scheduler">meeting_scheduler</option>
+          <option value="expense_tracker">expense_tracker</option>
+          <option value="onboarding_coordinator">onboarding_coordinator</option>
+          <option value="account_manager">account_manager</option>
+          <option value="software_provisioner">software_provisioner</option>
+          <option value="invoice_router">invoice_router</option>
+        </select>
+        <select id="filter-event" class="input-field" style="width:200px;" onchange="loadLogs()">
+          <option value="">All event types</option>
+          <option value="agent_started">agent_started</option>
+          <option value="agent_completed">agent_completed</option>
+          <option value="agent_failed">agent_failed</option>
+          <option value="approval_requested">approval_requested</option>
+          <option value="approval_granted">approval_granted</option>
+          <option value="approval_denied">approval_denied</option>
+          <option value="approval_timed_out">approval_timed_out</option>
+          <option value="task_queued">task_queued</option>
+          <option value="task_picked_up">task_picked_up</option>
+          <option value="escalated">escalated</option>
+          <option value="step_failed">step_failed</option>
+        </select>
+        <input type="date" id="filter-from" class="input-field" style="width:140px;" onchange="loadLogs()" />
+        <input type="date" id="filter-to" class="input-field" style="width:140px;" onchange="loadLogs()" />
+        <button onclick="clearLogFilters()" style="font-size:13px;color:#8DD3CE;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;" onmouseover="this.style.color='#FCF3E3'" onmouseout="this.style.color='#8DD3CE'">Clear</button>
+      </div>
+
+      <div style="flex:1;padding:24px 32px;">
+        <div class="section-card" style="overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:1px solid #0A5A7C;">
+                <th style="padding:12px 20px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Time</th>
+                <th style="padding:12px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Event</th>
+                <th style="padding:12px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Agent</th>
+                <th style="padding:12px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Task</th>
+                <th style="padding:12px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Actor</th>
+                <th style="padding:12px 20px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Details</th>
+              </tr>
+            </thead>
+            <tbody id="logs-body">
+              <tr><td colspan="6" style="padding:40px;text-align:center;color:#8DD3CE;font-size:13px;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/mock-data.js"></script>
+  <script src="/js/audit-logs.js"></script>
+</body>
+</html>

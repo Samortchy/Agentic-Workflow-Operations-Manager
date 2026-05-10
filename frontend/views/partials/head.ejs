@@ -1,0 +1,138 @@
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %> — AWOM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            page:    '#011F30',
+            surface: '#013D5A',
+            edge:    '#0A5A7C',
+            accent:  '#F4A258',
+            jade:    '#8DD3CE',
+            ink:     '#FCF3E3',
+            ok:      '#5BC26A',
+            danger:  '#E05252',
+          },
+          fontFamily: {
+            display: ['"DM Serif Display"', 'serif'],
+            sans:    ['"DM Sans"', 'sans-serif'],
+            mono:    ['"JetBrains Mono"', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #011F30; color: #FCF3E3; }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #0A5A7C; border-radius: 2px; }
+
+    .pill {
+      display: inline-flex; align-items: center;
+      padding: 2px 10px; border-radius: 9999px;
+      font-size: 11px; font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.04em; white-space: nowrap;
+    }
+
+    .tbl-row { border-bottom: 1px solid #0A5A7C; transition: background 120ms; cursor: pointer; }
+    .tbl-row:hover { background: rgba(10, 90, 124, 0.25); }
+    .tbl-row:last-child { border-bottom: none; }
+
+    .input-field {
+      width: 100%; padding: 9px 12px; font-size: 13px;
+      background: #011F30; border: 1px solid #0A5A7C; color: #FCF3E3;
+      border-radius: 4px; outline: none; font-family: 'DM Sans', sans-serif;
+      transition: border-color 150ms;
+    }
+    .input-field:focus { border-color: #F4A258; }
+    .input-field::placeholder { color: #0A5A7C; }
+
+    select.input-field option { background: #013D5A; }
+
+    .btn-primary {
+      padding: 9px 18px; font-size: 13px; font-weight: 500;
+      background: #F4A258; color: #011F30; border: none; border-radius: 4px;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: opacity 120ms;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:active { opacity: 0.72; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-ghost {
+      padding: 9px 18px; font-size: 13px; font-weight: 500;
+      background: transparent; color: #FCF3E3; border: 1px solid #0A5A7C;
+      border-radius: 4px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: background 120ms;
+    }
+    .btn-ghost:hover { background: rgba(10, 90, 124, 0.3); }
+
+    .btn-danger {
+      padding: 9px 18px; font-size: 13px; font-weight: 500;
+      background: rgba(224, 82, 82, 0.15); color: #E05252;
+      border: 1px solid #E05252; border-radius: 4px;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: background 120ms;
+    }
+    .btn-danger:hover { background: rgba(224, 82, 82, 0.25); }
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(1, 31, 48, 0.85);
+      display: flex; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-box {
+      background: #013D5A; border: 1px solid #0A5A7C;
+      border-radius: 6px; width: 100%; max-width: 520px;
+      padding: 28px; max-height: 90vh; overflow-y: auto;
+    }
+
+    .tab-btn {
+      padding: 8px 16px; font-size: 13px; font-weight: 500;
+      color: #8DD3CE; border-bottom: 2px solid transparent;
+      cursor: pointer; transition: color 120ms, border-color 120ms;
+      background: none; border-top: none; border-left: none; border-right: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .tab-btn.active { color: #F4A258; border-bottom-color: #F4A258; }
+    .tab-btn:hover:not(.active) { color: #FCF3E3; }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px;
+      font-size: 13px; border-radius: 4px; z-index: 200;
+      font-family: 'DM Sans', sans-serif; animation: slideUp 200ms ease;
+    }
+    @keyframes slideUp { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .code-block {
+      background: #011F30; border: 1px solid #0A5A7C; border-radius: 4px;
+      padding: 16px; font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: #8DD3CE; overflow-x: auto;
+      white-space: pre; line-height: 1.6;
+    }
+
+    .stat-card {
+      background: #013D5A; border: 1px solid #0A5A7C;
+      border-radius: 4px; padding: 24px;
+    }
+
+    .section-card {
+      background: #013D5A; border: 1px solid #0A5A7C; border-radius: 4px;
+    }
+
+    .timeline-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+    }
+  </style>
+  <script>window.API_BASE = '<%= apiBase %>';</script>
+</head>

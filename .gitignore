@@ -1,3 +1,4 @@
 .env 
 .claude
 /backend/node_modules
+.claude

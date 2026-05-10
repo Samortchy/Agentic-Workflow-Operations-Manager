@@ -1,5 +1,9 @@
 'use strict';
 
+// Allow Node.js to connect to Supabase on Windows where the CA bundle may differ.
+// Must be set before the first HTTPS connection — even before dotenv loads.
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 // Load environment variables first — before any config module is imported.
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 

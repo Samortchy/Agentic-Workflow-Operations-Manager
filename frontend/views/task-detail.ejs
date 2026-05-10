@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Task Detail', apiBase }) %>
+<body>
+  <div style="display:flex;height:100vh;overflow:hidden;">
+    <%- include('partials/sidebar', { page }) %>
+
+    <main style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+      <!-- Topbar -->
+      <div style="padding:16px 32px;border-bottom:1px solid #0A5A7C;display:flex;align-items:center;gap:16px;flex-shrink:0;background:#011F30;position:sticky;top:0;z-index:10;">
+        <a href="/tasks" style="display:flex;align-items:center;gap:6px;color:#8DD3CE;text-decoration:none;font-size:13px;flex-shrink:0;" onmouseover="this.style.color='#FCF3E3'" onmouseout="this.style.color='#8DD3CE'">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Tasks
+        </a>
+        <span style="color:#0A5A7C;">/</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#8DD3CE;" id="topbar-id">—</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px;" id="topbar-pills"></div>
+      </div>
+
+      <div style="padding:32px;flex:1;">
+        <!-- Header -->
+        <div style="margin-bottom:28px;" id="task-header">
+          <div style="height:24px;background:#013D5A;border-radius:2px;width:320px;margin-bottom:12px;"></div>
+          <div style="height:16px;background:#013D5A;border-radius:2px;width:200px;"></div>
+        </div>
+
+        <!-- Meta grid -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;" id="meta-grid">
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 6px;">Department</p>
+            <p style="font-size:14px;font-weight:500;color:#FCF3E3;margin:0;" id="meta-dept">—</p>
+          </div>
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 6px;">Requester</p>
+            <p style="font-size:13px;color:#FCF3E3;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="meta-requester">—</p>
+          </div>
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 6px;">Deadline</p>
+            <p style="font-size:13px;color:#FCF3E3;margin:0;" id="meta-deadline">—</p>
+          </div>
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 6px;">Agent</p>
+            <p style="font-size:13px;color:#FCF3E3;margin:0;font-family:'JetBrains Mono',monospace;font-size:12px;" id="meta-agent">—</p>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div style="border-bottom:1px solid #0A5A7C;margin-bottom:24px;display:flex;gap:0;">
+          <button class="tab-btn active" onclick="switchTab('overview', this)">Overview</button>
+          <button class="tab-btn" onclick="switchTab('envelope', this)">Envelope</button>
+          <button class="tab-btn" onclick="switchTab('timeline', this)">Timeline</button>
+          <button class="tab-btn" onclick="switchTab('signals', this)">Outcome Signals</button>
+        </div>
+
+        <!-- Tab: Overview -->
+        <div id="tab-overview">
+          <div class="section-card" style="padding:24px;" id="overview-content">
+            <p style="color:#8DD3CE;font-size:13px;">Loading…</p>
+          </div>
+        </div>
+
+        <!-- Tab: Envelope -->
+        <div id="tab-envelope" style="display:none;">
+          <div id="envelope-content">
+            <p style="color:#8DD3CE;font-size:13px;">Loading…</p>
+          </div>
+        </div>
+
+        <!-- Tab: Timeline -->
+        <div id="tab-timeline" style="display:none;">
+          <div id="timeline-content">
+            <p style="color:#8DD3CE;font-size:13px;">Loading…</p>
+          </div>
+        </div>
+
+        <!-- Tab: Signals -->
+        <div id="tab-signals" style="display:none;">
+          <div id="signals-content">
+            <p style="color:#8DD3CE;font-size:13px;">Loading…</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>window.TASK_ID = '<%= taskId %>';</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/mock-data.js"></script>
+  <script src="/js/task-detail.js"></script>
+</body>
+</html>

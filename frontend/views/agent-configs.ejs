@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Agent Configs', apiBase }) %>
+<body>
+  <div style="display:flex;height:100vh;overflow:hidden;">
+    <%- include('partials/sidebar', { page }) %>
+
+    <main style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+      <div style="padding:20px 32px;border-bottom:1px solid #0A5A7C;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#011F30;position:sticky;top:0;z-index:10;">
+        <h1 style="font-family:'DM Serif Display',serif;font-size:22px;color:#FCF3E3;margin:0;">Agent Configs</h1>
+        <button onclick="openCreateModal()" class="btn-primary" id="create-btn" style="display:none;">New Config</button>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:16px 32px;border-bottom:1px solid #0A5A7C;display:flex;align-items:center;gap:12px;flex-shrink:0;background:#011F30;">
+        <select id="filter-agent" class="input-field" style="width:200px;" onchange="loadConfigs()">
+          <option value="">All agents</option>
+          <option value="escalation_router">escalation_router</option>
+          <option value="document_summarizer">document_summarizer</option>
+          <option value="report_generator">report_generator</option>
+          <option value="leave_checker">leave_checker</option>
+          <option value="email_agent">email_agent</option>
+          <option value="powerpoint_agent">powerpoint_agent</option>
+          <option value="meeting_scheduler">meeting_scheduler</option>
+          <option value="expense_tracker">expense_tracker</option>
+          <option value="onboarding_coordinator">onboarding_coordinator</option>
+          <option value="account_manager">account_manager</option>
+          <option value="software_provisioner">software_provisioner</option>
+          <option value="invoice_router">invoice_router</option>
+        </select>
+        <select id="filter-active" class="input-field" style="width:130px;" onchange="loadConfigs()">
+          <option value="true">Active only</option>
+          <option value="">All</option>
+        </select>
+      </div>
+
+      <div style="flex:1;padding:24px 32px;">
+        <div class="section-card" style="overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:1px solid #0A5A7C;">
+                <th style="padding:12px 20px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Agent</th>
+                <th style="padding:12px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Version</th>
+                <th style="padding:12px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Department</th>
+                <th style="padding:12px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Risk Tier</th>
+                <th style="padding:12px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Approval</th>
+                <th style="padding:12px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;">Status</th>
+                <th style="padding:12px 20px;text-align:right;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;letter-spacing:0.06em;"></th>
+              </tr>
+            </thead>
+            <tbody id="configs-body">
+              <tr><td colspan="7" style="padding:40px;text-align:center;color:#8DD3CE;font-size:13px;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- View Config Modal -->
+  <div id="view-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-box" style="max-width:680px;">
+      <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <h3 style="font-family:'DM Serif Display',serif;font-size:18px;color:#FCF3E3;margin:0 0 4px;" id="modal-agent-name"></h3>
+          <p style="font-size:12px;color:#8DD3CE;margin:0;font-family:'JetBrains Mono',monospace;" id="modal-config-meta"></p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button onclick="deactivateConfig()" class="btn-danger" id="deactivate-btn" style="display:none;font-size:12px;padding:6px 14px;">Deactivate</button>
+          <button onclick="closeViewModal()" style="background:none;border:none;cursor:pointer;color:#8DD3CE;font-size:20px;line-height:1;padding:0;">×</button>
+        </div>
+      </div>
+      <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px;">Configuration JSON</p>
+      <pre class="code-block" id="modal-config-json" style="max-height:480px;overflow-y:auto;"></pre>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/mock-data.js"></script>
+  <script src="/js/agent-configs.js"></script>
+</body>
+</html>

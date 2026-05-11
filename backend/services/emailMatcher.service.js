@@ -1,4 +1,4 @@
-const supabase = require('../config/supabase.js');
+const supabase = require('../config/supabaseAdmin.js');
 
 // Strips the domain from an email address.
 // 'ali@company.com' → 'company.com'

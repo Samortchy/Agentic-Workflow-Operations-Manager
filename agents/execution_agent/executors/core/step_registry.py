@@ -43,10 +43,10 @@ STEP_REGISTRY = {
         "PDFRenderer":    PDFRenderer,
     },
     "agent_call": {
-        "DocumentSummarizer": "configs/02_document_summarizer.json",
-        "EscalationRouter":   "configs/01_escalation_router.json",
-        "LeaveChecker":       "configs/04_leave_checker.json",
-        "ExpenseTracker":     "configs/08_expense_tracker.json",
-        "EmailSender":        "configs/05_email_agent.json",
+        "DocumentSummarizer": "document_summarizer",
+        "EscalationRouter":   "escalation_router",
+        "LeaveChecker":       "leave_checker",
+        "ExpenseTracker":     "expense_tracker",
+        "EmailSender":        "email_agent",
     },
 }

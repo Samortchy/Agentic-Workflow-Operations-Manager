@@ -1,0 +1,29 @@
+ONBOARDING CHECKLIST — HR Department
+=====================================
+Employee : {{ employee_name | default('New Hire') }}
+Role     : {{ role | default('—') }}
+Start    : {{ start_date | default('—') }}
+Manager  : {{ manager_name | default('—') }}
+
+TOOLS TO PROVISION
+{% if rows is defined %}
+{% for row in rows %}
+  [ ] {{ row.tool_name }} ({{ row.tool_category }}) — Owner: {{ row.provisioning_owner }}
+{% endfor %}
+{% else %}
+  [ ] BambooHR
+  [ ] Slack
+  [ ] Zoom
+{% endif %}
+
+ACCESS & ACCOUNTS
+  [ ] BambooHR employee profile created
+  [ ] Company email account created
+  [ ] HR shared drives access granted
+  [ ] Payroll system enrolled
+
+FIRST DAY
+  [ ] HR policies walkthrough
+  [ ] Benefits enrollment
+  [ ] Team introductions
+  [ ] Manager 1:1 scheduled

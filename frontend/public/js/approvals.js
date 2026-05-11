@@ -89,7 +89,7 @@ async function resolveApproval(status) {
   try {
     await api.patch(`/api/approvals/${_currentApprovalId}/resolve`, {
       status,
-      resolved_by:     emp?.email || 'unknown',
+      resolved_by:     emp?.employee_id || emp?.email || 'unknown',
       resolution_note: note || undefined,
     });
 

@@ -1,4 +1,4 @@
-const supabase      = require('../config/supabase.js');
+const supabase      = require('../config/supabaseAdmin.js');
 const supabaseAdmin = require('../config/supabaseAdmin.js');
 const { APPROVAL_TYPES } = require('../config/constants.js');
 
@@ -83,7 +83,11 @@ const create = async ({
 // Resolves an approval as 'approved' or 'denied'.
 // On approved: flips task back to 'queued' so the orchestrator picks it up.
 // On denied:   flips task to 'failed' and logs to audit_logs.
+const _isUuid = (v) => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+
 const resolve = async (approval_id, { status, resolved_by, resolution_note = '' }) => {
+  // resolved_by must be a UUID (FK to employees) — coerce anything else to null
+  if (!_isUuid(resolved_by)) resolved_by = null;
   if (!['approved', 'denied'].includes(status)) {
     throw new Error("status must be 'approved' or 'denied'.");
   }

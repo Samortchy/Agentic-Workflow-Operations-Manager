@@ -20,7 +20,8 @@ const getApprovalById = async (req, res) => {
 
 const createApproval = async (req, res) => {
   try {
-    const data = await approvalsService.create({ ...req.body, company_id: req.company_id });
+    const company_id = req.company_id || req.body.company_id;
+    const data = await approvalsService.create({ ...req.body, company_id });
     return res.status(201).json(data);
   } catch (err) {
     return res.status(400).json({ error: err.message });

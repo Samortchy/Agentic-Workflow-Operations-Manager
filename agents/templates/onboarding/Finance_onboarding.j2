@@ -1,0 +1,29 @@
+ONBOARDING CHECKLIST — Finance Department
+==========================================
+Employee : {{ employee_name | default('New Hire') }}
+Role     : {{ role | default('—') }}
+Start    : {{ start_date | default('—') }}
+Manager  : {{ manager_name | default('—') }}
+
+TOOLS TO PROVISION
+{% if rows is defined %}
+{% for row in rows %}
+  [ ] {{ row.tool_name }} ({{ row.tool_category }}) — Owner: {{ row.provisioning_owner }}
+{% endfor %}
+{% else %}
+  [ ] QuickBooks Online
+  [ ] Slack
+  [ ] Zoom
+{% endif %}
+
+ACCESS & ACCOUNTS
+  [ ] Finance systems access (read-only initially)
+  [ ] Expense reporting system access
+  [ ] Signatory authority form submitted
+  [ ] Budget visibility configured
+
+FIRST DAY
+  [ ] Finance policies walkthrough
+  [ ] Chart of accounts overview
+  [ ] Team introductions
+  [ ] Manager 1:1 scheduled

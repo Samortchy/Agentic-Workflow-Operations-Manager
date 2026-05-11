@@ -34,7 +34,14 @@
       "PowerShell(netstat *)",
       "PowerShell(Get-Process *)",
       "Bash(node -e \"require\\('./app'\\); console.log\\('app loads ok'\\)\")",
-      "PowerShell(node -e $script)"
+      "PowerShell(node -e $script)",
+      "PowerShell(python -c $script)",
+      "PowerShell(python \"C:\\\\Users\\\\USER\\\\Desktop\\\\Office-workflow-multiAgent-system\\\\agents\\\\inspect_db.py\")",
+      "PowerShell(python \"C:\\\\Users\\\\USER\\\\Desktop\\\\Office-workflow-multiAgent-system\\\\agents\\\\execution_agent\\\\executors\\\\data\\\\seed_db.py\")",
+      "PowerShell(try { \\(Invoke-RestMethod \"http://localhost:8000/health\" -TimeoutSec 5\\) | ConvertTo-Json } catch { \"FAILED: $_\" })",
+      "PowerShell(try { \\(Invoke-RestMethod \"http://localhost:8000/health\" -TimeoutSec 3\\).status } catch { \"DOWN\" })",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\USER\\\\Desktop\\\\Office-workflow-multiAgent-system\\\\agents\"; $env:PYTHONIOENCODING=\"utf-8\"; python -m execution_agent.worker)",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\USER\\\\Desktop\\\\Office-workflow-multiAgent-system\\\\agents\"; $env:PYTHONIOENCODING=\"utf-8\"; python email_poller.py)"
     ]
   }
 }

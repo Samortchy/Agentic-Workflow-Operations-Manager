@@ -1,0 +1,26 @@
+Subject: Re: {{ subject | default('Your leave balance enquiry') }}
+
+Dear {{ employee_name | default(requester_name, true) | default('Employee', true) }},
+
+Thank you for your enquiry regarding your {{ leave_type | default('annual') }} leave balance.
+
+{% if row_count is defined and row_count > 0 %}
+{% for row in rows %}
+Your current leave balance:
+
+  Leave type       : {{ row.leave_type | title }}
+  Total entitlement: {{ row.total_entitlement }} days
+  Days used        : {{ row.used_days }} days
+  Days remaining   : {{ row.remaining_days }} days
+  Policy note      : {{ row.policy_note }}
+
+{% endfor %}
+{% else %}
+We were unable to locate a leave balance record for the details provided.
+Please contact HR directly to verify your employee record.
+{% endif %}
+
+If you have any questions, please don't hesitate to reach out.
+
+Kind regards,
+AWOM HR Automation

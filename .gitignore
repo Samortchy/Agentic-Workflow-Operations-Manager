@@ -1,4 +1,7 @@
 .env 
-.claude
+.claude/
 /backend/node_modules
-.claude
+/backend/config/schema.sql
+start_awom.exe
+
+output/

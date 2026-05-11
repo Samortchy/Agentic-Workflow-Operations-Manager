@@ -20,7 +20,8 @@ const getAgentConfigById = async (req, res) => {
 
 const getActiveConfig = async (req, res) => {
   try {
-    const data = await agentConfigsService.getActive(req.params.agent_name, req.company_id);
+    const company_id = req.company_id || req.query.company_id;
+    const data = await agentConfigsService.getActive(req.params.agent_name, company_id);
     return res.status(200).json(data);
   } catch (err) {
     return res.status(404).json({ error: err.message });

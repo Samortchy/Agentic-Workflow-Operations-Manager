@@ -1,0 +1,30 @@
+ONBOARDING CHECKLIST — IT Department
+=====================================
+Employee : {{ employee_name | default('New Hire') }}
+Role     : {{ role | default('—') }}
+Start    : {{ start_date | default('—') }}
+Manager  : {{ manager_name | default('—') }}
+
+TOOLS TO PROVISION
+{% if rows is defined %}
+{% for row in rows %}
+  [ ] {{ row.tool_name }} ({{ row.tool_category }}) — Owner: {{ row.provisioning_owner }}
+{% endfor %}
+{% else %}
+  [ ] GitHub Enterprise
+  [ ] Jira
+  [ ] Slack
+  [ ] MacBook Pro
+{% endif %}
+
+ACCESS & ACCOUNTS
+  [ ] Company email account created
+  [ ] VPN access provisioned
+  [ ] Password manager setup
+  [ ] MFA enrolled on all accounts
+
+FIRST DAY
+  [ ] Welcome meeting with manager
+  [ ] Team introductions
+  [ ] Office tour / remote setup confirmed
+  [ ] HR induction completed

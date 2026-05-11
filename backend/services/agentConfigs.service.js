@@ -1,4 +1,4 @@
-const supabase        = require('../config/supabase.js');
+const supabase        = require('../config/supabaseAdmin.js');
 const { AGENT_NAMES } = require('../config/constants.js');
 
 const VALID_STEP_TYPES = ['extractor', 'processor', 'dispatcher', 'custom', 'agent_call'];
@@ -36,7 +36,8 @@ const getAll = async (filters = {}) => {
     .select('*')
     .order('agent_name', { ascending: true });
 
-  if (company_id)              query = query.eq('company_id', company_id);
+  // Return configs that belong to this company OR are global (company_id IS NULL)
+  if (company_id) query = query.or(`company_id.eq.${company_id},company_id.is.null`);
   if (agent_name)              query = query.eq('agent_name', agent_name);
   if (is_active !== undefined) query = query.eq('is_active', is_active === 'true' || is_active === true);
 
@@ -58,11 +59,26 @@ const getById = async (config_id) => {
 
 // Called by the factory runner at startup to load its config.
 const getActive = async (agent_name, company_id) => {
+  // 1. Try company-specific config first
+  if (company_id) {
+    const { data } = await supabase
+      .from('agent_configs')
+      .select('*')
+      .eq('agent_name', agent_name)
+      .eq('company_id', company_id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (data) return data;
+  }
+
+  // 2. Fall back to any active config with this agent_name (universal / unscoped)
   const { data, error } = await supabase
     .from('agent_configs')
     .select('*')
     .eq('agent_name', agent_name)
-    .eq('company_id', company_id)
     .eq('is_active', true)
     .order('created_at', { ascending: false })
     .limit(1)

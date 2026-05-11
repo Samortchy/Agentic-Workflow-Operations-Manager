@@ -9,8 +9,9 @@ from email.mime.base import MIMEBase
 from email import encoders
 from pathlib import Path
 
+from pathlib import Path as _Path
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(dotenv_path=_Path(__file__).parents[6] / ".env", override=False)
 
 from ..base_step import BaseStep, StepResult
 from ...core.envelope import resolve_path
@@ -47,6 +48,11 @@ class EmailDispatcher(BaseStep):
             except KeyError as exc:
                 return StepResult(success=False, data={}, error=str(exc))
 
+            # If resolved value isn't a valid email, fall back to the From: address
+            # in the raw_text (common when requester_name holds a display name only).
+            if recipient and "@" not in str(recipient):
+                recipient = self._extract_from_email(envelope.get("raw_text", "")) or recipient
+
             # 2. Find email body from most recent step that has one.
             body = self._find_body(envelope)
 
@@ -80,6 +86,22 @@ class EmailDispatcher(BaseStep):
 
         except Exception as e:
             return StepResult(success=False, data={}, error=str(e))
+
+    # ------------------------------------------------------------------
+    # Recipient helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _extract_from_email(raw_text: str) -> str | None:
+        """Extract the sender email from a 'From: ...' line in the raw text."""
+        import re
+        for line in raw_text.splitlines():
+            if line.lower().startswith("from:"):
+                # Match bare email or angle-bracket form: From: Name <email@x.com>
+                m = re.search(r"<([^>]+@[^>]+)>", line) or re.search(r"[\w.+-]+@[\w.+-]+\.\w+", line)
+                if m:
+                    return m.group(1) if "<" in line else m.group(0)
+        return None
 
     # ------------------------------------------------------------------
     # Body extraction

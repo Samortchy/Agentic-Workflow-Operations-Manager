@@ -1,35 +1,31 @@
 """
 routing_table.py — LLM-based execution agent router.
 
-Sends the task context to an LLM with a menu of all available agents and asks
-it to pick the best match. Falls back to the escalation router on any failure.
+Asks the LLM to pick the best agent for the task.
+Returns an agent_name string (e.g. "leave_checker").
+Falls back to "escalation_router" on any error.
 """
 
 import json
 import logging
-import os
 import sys
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-_CONFIGS_DIR = (
-    Path(__file__).parent.parent
-    / "executors"
-    / "configs"
-)
+_FALLBACK = "escalation_router"
 
-# All valid config filenames — used to validate the LLM's response
-_VALID_CONFIGS = {
-    "01_escalation_router.json",
-    "02_document_summarizer.json",
-    "03_report_generator.json",
-    "04_leave_checker.json",
-    "05_email_agent.json",
-    "06_powerpoint_agent.json",
-    "07_meeting_scheduler.json",
-    "08_expense_tracker.json",
-    "09_onboarding_coordinator.json",
+# Map the filenames the LLM knows to canonical agent names used by the backend.
+_FILENAME_TO_AGENT: dict[str, str] = {
+    "01_escalation_router.json":   "escalation_router",
+    "02_document_summarizer.json": "document_summarizer",
+    "03_report_generator.json":    "report_generator",
+    "04_leave_checker.json":       "leave_checker",
+    "05_email_agent.json":         "email_agent",
+    "06_powerpoint_agent.json":    "powerpoint_agent",
+    "07_meeting_scheduler.json":   "meeting_scheduler",
+    "08_expense_tracker.json":     "expense_tracker",
+    "09_onboarding_coordinator.json": "onboarding_coordinator",
 }
 
 _SYSTEM_PROMPT = """
@@ -88,7 +84,7 @@ ROUTING RULES (apply in order, stop at first match):
 9. Task is an explicit incident, failure, violation, or needs urgent human approval → 01_escalation_router.json
 10. Nothing matches any of the above → 01_escalation_router.json
 
-VALID CONFIG VALUES — your response MUST use one of these exactly, character for character:
+VALID CONFIG VALUES — your response MUST use one of these exactly:
 - 01_escalation_router.json
 - 02_document_summarizer.json
 - 03_report_generator.json
@@ -101,8 +97,6 @@ VALID CONFIG VALUES — your response MUST use one of these exactly, character f
 
 STRICT OUTPUT RULES:
 - You MUST always return a config value — never return null.
-- The config value MUST exactly match one of the nine filenames listed above.
-- No uppercase, no spaces, no missing .json suffix, no extra characters.
 - Return ONLY this JSON object and nothing else:
 
 {
@@ -113,14 +107,13 @@ STRICT OUTPUT RULES:
 No markdown. No backticks. No explanation outside the JSON.
 """.strip()
 
-def resolve_config(task_type: str, department: str, envelope: dict) -> Path | None:
+
+def resolve_agent_name(task_type: str, department: str, envelope: dict) -> str:
     """
     Ask the LLM to select the best execution agent for this task.
-    Returns the absolute Path to the chosen config, or None if the LLM
-    says no agent fits (caller will fall back to escalation or review queue).
-    Falls back to 01_escalation_router.json on any LLM/parse error.
+    Returns the agent_name string (e.g. "leave_checker").
+    Falls back to "escalation_router" on any error.
     """
-    # Build a compact task context for the LLM
     task   = envelope.get("task", {})
     intake = envelope.get("intake", {})
 
@@ -134,7 +127,6 @@ def resolve_config(task_type: str, department: str, envelope: dict) -> Path | No
     )
 
     try:
-        # Re-use the task_agent's OpenRouter provider (same API key, same model)
         _TASK_AGENT_DIR = Path(__file__).parent.parent / "task_agent"
         if str(_TASK_AGENT_DIR) not in sys.path:
             sys.path.insert(0, str(_TASK_AGENT_DIR))
@@ -149,23 +141,19 @@ def resolve_config(task_type: str, department: str, envelope: dict) -> Path | No
             max_tokens=128,
         )
 
-        result = json.loads(raw)
-        chosen = result.get("config")
+        result   = json.loads(raw)
+        chosen   = result.get("config", "")
         reasoning = result.get("reasoning", "")
 
         logger.info("LLM router chose %r — %s", chosen, reasoning)
 
-        if chosen is None:
-            return None
+        agent_name = _FILENAME_TO_AGENT.get(chosen)
+        if not agent_name:
+            logger.warning("LLM returned unknown config %r — falling back to escalation_router", chosen)
+            return _FALLBACK
 
-        if chosen not in _VALID_CONFIGS:
-            logger.warning(
-                "LLM router returned unknown config %r — falling back to escalation", chosen
-            )
-            return _CONFIGS_DIR / "01_escalation_router.json"
-
-        return _CONFIGS_DIR / chosen
+        return agent_name
 
     except Exception as exc:
         logger.error("LLM router failed (%s) — falling back to escalation_router", exc)
-        return _CONFIGS_DIR / "01_escalation_router.json"
+        return _FALLBACK

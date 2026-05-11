@@ -1,4 +1,4 @@
-const supabase                  = require('../config/supabase.js');
+const supabase                  = require('../config/supabaseAdmin.js');
 const { SUBSCRIPTION_STATUSES } = require('../config/constants.js');
 
 const getAll = async () => {

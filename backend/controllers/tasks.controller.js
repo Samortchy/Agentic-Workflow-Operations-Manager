@@ -21,7 +21,8 @@ const getTaskById = async (req, res) => {
 // Called by the Phase 1 pipeline — envelope is the full Phase 1 JSON body.
 const createTask = async (req, res) => {
   try {
-    const data = await tasksService.create(req.body, req.company_id);
+    const company_id = req.company_id || req.body.company_id;
+    const data = await tasksService.create(req.body, company_id);
     return res.status(201).json(data);
   } catch (err) {
     return res.status(400).json({ error: err.message });

@@ -23,7 +23,8 @@
             "class": "DBExtractor",
             "config": {
                 "table": "finance_expense_reports",
-                "access": "read_only"
+                "access": "read_only",
+                "match_on": ["employee_name", "report_id"]
             }
         },
         {

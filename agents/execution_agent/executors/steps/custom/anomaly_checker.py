@@ -36,10 +36,16 @@ Spec compliance:
     - Uses resolve_path() from core.envelope for all envelope reads
 """
 
+import os
+import json
 import sqlite3
+from pathlib import Path
 from datetime import datetime, timedelta
 from ..base_step import BaseStep, StepResult
 from ...core.envelope import resolve_path
+
+# parents[2] == executors/ (custom → steps → executors); the DB lives in executors/data/.
+_DEFAULT_DB_PATH = Path(__file__).parents[2] / "data" / "office.db"
 
 
 class AnomalyChecker(BaseStep):
@@ -49,25 +55,48 @@ class AnomalyChecker(BaseStep):
             # ── 1. Read config thresholds ─────────────────────────────────
             duplicate_window_days  = config.get("duplicate_window_days", 30)
             receipt_threshold_egp  = config.get("receipt_threshold_egp", 500)
-            db_path                = config.get("db_path", "data/office.db")
+            db_path                = config.get("db_path") or os.environ.get("DB_PATH") or str(_DEFAULT_DB_PATH)
 
             # ── 2. Read the expense record fetched by the previous step ───
-            # The DBExtractor step before this one is named "fetch_expense_record"
-            # Its output lives at execution.steps.fetch_expense_record.data
-            record = resolve_path(
+            # DBExtractor ("fetch_expense_record") returns {rows, row_count, record}.
+            # `record` is the lone row when exactly one matched; otherwise fall back
+            # to rows[0] when unambiguous, else escalate (can't anomaly-check a set).
+            data = resolve_path(
                 envelope,
                 "execution.steps.fetch_expense_record.data"
             )
+            record = data.get("record")
+            if record is None:
+                rows = data.get("rows", [])
+                if len(rows) == 1:
+                    record = rows[0]
+                else:
+                    return StepResult(
+                        success=False,
+                        data={},
+                        error=(
+                            f"AnomalyChecker: expected exactly one expense record but the "
+                            f"fetch returned {len(rows)}. Ensure 'report_id' was extracted so "
+                            f"the lookup is unambiguous."
+                        ),
+                    )
 
             report_id     = record.get("report_id", "")
             employee_id   = record.get("employee_id", "")
             amount_egp    = float(record.get("amount_egp", 0))
-            has_receipt   = record.get("has_receipt", False)
-            line_items    = record.get("line_items", [])
+            has_receipt   = bool(record.get("has_receipt", False))
             status        = record.get("status", "unknown")
             approval_date = record.get("approval_date", None)
             payment_eta   = record.get("payment_eta", None)
             submitted_at  = record.get("submitted_at", None)
+
+            # line_items is stored as JSON text in SQLite — parse to a list.
+            line_items = record.get("line_items", [])
+            if isinstance(line_items, str):
+                try:
+                    line_items = json.loads(line_items)
+                except (ValueError, TypeError):
+                    line_items = []
 
             # ── 3. Run anomaly checks ─────────────────────────────────────
             anomaly_reasons = []

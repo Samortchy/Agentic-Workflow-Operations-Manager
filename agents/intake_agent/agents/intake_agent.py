@@ -11,88 +11,48 @@ load_dotenv()
 # timeout=30.0: prevent indefinite hangs on slow or stalled connections.
 client = Groq(api_key=os.getenv("GROQ_API_KEY"), max_retries=0, timeout=30.0)
 
-SYSTEM_PROMPT = """
-You are an intake classifier for an office workflow automation system.
-Your job is to analyse an incoming request and return a structured JSON object
-that tells the system how to handle it.
+import sys
+_AG = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _AG not in sys.path:
+    sys.path.insert(0, _AG)
+from prompts import INTAKE_SYSTEM
 
-Return ONLY valid JSON with exactly these fields — no markdown, no backticks, no extra text:
+# Centralized in agents/prompts/ (verbatim) — see that package.
+SYSTEM_PROMPT = INTAKE_SYSTEM
 
-{
-  "department": "<IT | Finance | HR | Other>",
-  "task_type": "<one of the allowed values below>",
-  "isAutonomous": <true | false>,
-  "reasoning": "<one sentence explaining your classification>",
-  "confidence": <float between 0.0 and 1.0>
-}
+_or_client = None
 
-ALLOWED TASK TYPES (pick the closest match):
-- "escalation"         → a dispute, complaint, or issue that needs manager review
-- "document_summary"   → summarise or extract information from a document or file
-- "report"             → generate a structured report from data or metrics
-- "leave_check"        → check, request, or enquire about leave or time off
-- "email"              → draft or send a professional email reply
-- "presentation"       → create a slide deck or PowerPoint presentation
-- "expense_check"      → validate, check, or query an expense report
-- "onboarding"         → new employee setup, onboarding info, or access provisioning
-- "meeting_scheduler"  → schedule a meeting, process meeting minutes, or handle calendar requests
 
-If the request does not match any of the above, use the closest one and set confidence below 0.6.
+def _get_openrouter():
+    global _or_client
+    if _or_client is None:
+        from openai import OpenAI
+        _or_client = OpenAI(
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1",
+            timeout=30.0, max_retries=0,
+        )
+    return _or_client
 
-AUTONOMY RULES:
-A task is autonomous (isAutonomous: true) if ALL of the following are true:
-  1. It is informational, generative, or read-only — no approvals or payments involved
-  2. It does not affect payroll, hiring, termination, or legal standing
-  3. It does not require a human decision or sign-off to be valid
-  4. The outcome is low-risk and easily reversible if wrong
-
-A task is NOT autonomous (isAutonomous: false) if ANY of the following are true:
-  - It involves money movement, invoice approval, or payment release
-  - It affects an employee's contract, salary, or employment status
-  - It involves a formal complaint, dispute, or disciplinary action
-  - It requires a manager or executive to sign off
-  - You are uncertain — when in doubt, set false
-
-AUTONOMOUS TASK EXAMPLES (isAutonomous: true):
-These task types are ALWAYS autonomous unless they contain a non-autonomous trigger above:
-  - "document_summary"   → summarising a report, extracting key facts from a file, digesting an attachment
-  - "report"             → generating a KPI report, finance summary, budget overview, or analytics report from existing data
-  - "presentation"       → creating a PowerPoint or slide deck from provided context or data
-  - "leave_check"        → looking up a leave balance or answering a PTO inquiry (read-only, no approval)
-  - "email"              → drafting an informational or FAQ reply that does not commit to payments or contracts
-  - "meeting_scheduler"  → booking a meeting or sending a calendar invite with no budget or hiring implications
-  - "onboarding"         → providing onboarding information, checklists, or IT setup instructions (no contract changes)
-  - "expense_check"      → checking the status of an already-submitted expense report (read-only lookup only)
-
-NON-AUTONOMOUS TASK EXAMPLES (isAutonomous: false):
-These are NEVER autonomous regardless of how the request is phrased:
-  - "escalation"         → always requires a human reviewer — never autonomous
-  - Any request to approve, release, or process a payment or invoice
-  - Any request to change salary, role, contract, or employment status
-  - Any request involving a formal complaint, disciplinary action, or legal matter
-  - Any expense_check that involves approving or rejecting a claim (not just checking status)
-  - Any leave_check that involves approving leave (not just checking balance)
-
-CONFIDENCE GUIDE:
-- 0.9–1.0 → request is clear and maps perfectly to a task type
-- 0.7–0.9 → request is mostly clear with minor ambiguity
-- 0.5–0.7 → request is ambiguous or maps loosely to a task type
-- below 0.5 → very unclear — still classify but flag for human review
-
-DEPARTMENT:
-Infer from context. Use "Other" if none of IT, Finance or HR apply.
-"""
 
 def _call_llm(raw_text: str, temperature: float = 0.1) -> str:
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Request: {raw_text}"}
-        ],
-        temperature=temperature
-    )
-    return response.choices[0].message.content.strip()
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": f"Request: {raw_text}"},
+    ]
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile", messages=messages, temperature=temperature)
+        content = (response.choices[0].message.content or "").strip()
+        if content:
+            return content
+        raise RuntimeError("empty Groq response")
+    except Exception:
+        # Fall back to OpenRouter so a Groq outage / decommissioned model never
+        # breaks intake classification.
+        r = _get_openrouter().chat.completions.create(
+            model="meta-llama/llama-3.3-70b-instruct", messages=messages, temperature=temperature)
+        return (r.choices[0].message.content or "").strip()
 
 
 def run(envelope: dict, max_retries: int = 4) -> dict:
@@ -121,7 +81,9 @@ def run(envelope: dict, max_retries: int = 4) -> dict:
                 "processed_at": datetime.now(timezone.utc).isoformat()
             }
 
-            # Spec: confidence < 0.60 → override to human review
+            # Spec: confidence < 0.60 → override to human review.
+            # FIXME(P0-2): threshold intentionally kept at 0.1 for now (owner decision, 2026-06-06).
+            #   Per spec this should be 0.60 — revert before real use. Tracked in PLAN.md §2/§5 (P0-2).
             if confidence < 0.1:
                 envelope["intake"]["isAutonomous"] = False
                 envelope["intake"]["reasoning"] += " [Low confidence — routed to human review]"

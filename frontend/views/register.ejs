@@ -82,7 +82,7 @@
 
   <script src="/js/api.js"></script>
   <script>
-    if (Auth.isLoggedIn()) window.location.href = '/';
+    if (Auth.isLoggedIn()) window.location.href = '/dashboard';
 
     document.getElementById('register-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -124,7 +124,7 @@
 
         Auth.setTokens(data.access_token, data.refresh_token);
         if (data.user) Auth.setUser(data.user);
-        window.location.href = '/';
+        window.location.href = '/dashboard';
       } catch (err) {
         errEl.textContent = 'Could not reach server.';
         errEl.style.display = 'block';

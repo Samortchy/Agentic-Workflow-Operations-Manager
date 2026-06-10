@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Autonomous Workflow Operations', apiBase }) %>
+<body class="bg-page text-ink font-sans">
+  <style>
+    .feature-card { transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
+    .feature-card:hover, .feature-card:focus { transform: translateY(-4px); border-color:#F4A258; box-shadow:0 10px 28px rgba(0,0,0,0.28); outline:none; }
+    .feature-card .learn { opacity:0; transition:opacity 160ms ease; }
+    .feature-card:hover .learn, .feature-card:focus .learn { opacity:1; }
+
+    .step-card { transition: transform 180ms ease, border-color 180ms ease; }
+    .step-card:hover { transform: translateY(-6px); border-color:#F4A258; }
+    .step-icon { animation: floaty 3s ease-in-out infinite; }
+    .flow-arrow { animation: nudge 1.6s ease-in-out infinite; }
+    @keyframes floaty { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+    @keyframes nudge  { 0%,100% { transform:translateX(0); } 50% { transform:translateX(5px); } }
+    @media (prefers-reduced-motion: reduce) { .step-emoji, .flow-arrow { animation:none; } }
+  </style>
+
+  <!-- ── Nav ────────────────────────────────────────────────── -->
+  <header class="sticky top-0 z-50 border-b border-edge" style="background:rgba(1,31,48,0.85);backdrop-filter:blur(8px);">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-baseline gap-2">
+        <span class="font-display text-2xl">AWOM</span>
+        <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-jade">Workflow Platform</span>
+      </div>
+      <nav class="flex items-center gap-3">
+        <a href="/login" id="nav-signin" class="btn-ghost" style="text-decoration:none;">Sign in</a>
+        <a href="/register" id="nav-start" class="btn-primary" style="text-decoration:none;">Get started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ── Hero ───────────────────────────────────────────────── -->
+  <section class="max-w-4xl mx-auto px-6 pt-24 pb-16 text-center">
+    <span class="pill" style="color:#F4A258;background:rgba(244,162,88,0.12);border:1px solid rgba(244,162,88,0.3);">
+      Autonomous Workflow Operations Manager
+    </span>
+    <h1 class="font-display leading-[1.05] mt-6" style="font-size:clamp(40px,7vw,68px);">
+      Turn every email into<br><span class="text-accent">executed action.</span>
+    </h1>
+    <p class="text-jade mt-6 mx-auto" style="max-width:620px;font-size:18px;line-height:1.6;">
+      AWOM reads incoming corporate requests, classifies and prioritizes them, and
+      autonomously routes them to specialized agents that get the work done —
+      safely, auditably, and without manual triage.
+    </p>
+    <div class="flex items-center justify-center gap-3 mt-9">
+      <a href="/register" id="hero-start" class="btn-primary" style="text-decoration:none;padding:12px 24px;font-size:14px;">Get started free</a>
+      <a href="/login" id="hero-signin" class="btn-ghost" style="text-decoration:none;padding:12px 24px;font-size:14px;">Sign in</a>
+    </div>
+
+    <!-- stats row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 text-left">
+      <% const stats = [['9','specialized agents'],['92%','priority accuracy'],['~100%','correct routing'],['6','evaluation dimensions']]; %>
+      <% stats.forEach(([n,l]) => { %>
+        <div class="stat-card text-center">
+          <p class="font-display text-accent" style="font-size:32px;line-height:1;"><%= n %></p>
+          <p class="text-jade mt-2 font-mono uppercase tracking-wider" style="font-size:11px;"><%= l %></p>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <!-- ── Features ───────────────────────────────────────────── -->
+  <section class="max-w-6xl mx-auto px-6 py-16">
+    <div class="text-center mb-12">
+      <p class="font-mono uppercase tracking-[0.15em] text-jade" style="font-size:11px;">Why AWOM</p>
+      <h2 class="font-display mt-2" style="font-size:34px;">An intelligent operator, not just a chatbot</h2>
+      <p class="text-jade mt-2" style="font-size:13px;">Tap any capability for the details.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5">
+      <%
+        const ICONS = {
+          pipeline: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 6h6a3 3 0 0 1 3 3v1M7 18h6a3 3 0 0 0 3-3v-1"/></svg>`,
+          factory: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
+          shield: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/><path d="M9 12l2 2 4-4"/></svg>`,
+          gauge: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1"/></svg>`,
+          eval: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14V4M9 14V8M14 14v-3M19 14V6"/><path d="M3 18h18"/></svg>`,
+          mail: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`,
+        };
+        const feats = [
+          ['pipeline','Multi-agent pipeline','Specialized agents handle each stage of a request.','AWOM decomposes the workflow into cooperating agents — intake classification, task structuring, prioritization, orchestration, and execution. Because each stage is its own agent, every step can be independently tuned, evaluated, and improved, and an error in one stage never silently corrupts the others.'],
+          ['factory','Configurable agent factory','New capabilities are added by configuration, not code.','Each of the nine execution agents is defined by a declarative configuration — its steps, approval policy, and failure handling — executed on one shared runtime. Adding a new task type means writing a config, not building a new service, so the system stays uniform and effortlessly extensible.'],
+          ['shield','Governance by design','Safety and oversight are built into the architecture.','A validation layer screens every request for prompt-injection and adversarial content, role-based access control protects personal data, an autonomy gate sends risky or low-confidence requests to humans, and an append-only audit log records every decision and action end to end.'],
+          ['gauge','ML-based prioritization','Four-level urgency, 92% accurate.','A gradient-boosting model trained on request text and structured signals assigns each request one of four urgency levels — low, medium, high, or critical — with 92% accuracy, so the most important work is handled first instead of by inbox order.'],
+          ['eval','Continuous evaluation','Every run is scored and surfaced.','Judgment agents score each completed run across six dimensions — completion, timeliness, routing, error handling, approval adherence, and output quality — feeding a live performance dashboard and a human-supervised feedback loop that retrains only on verified data.'],
+          ['mail','Email-native','No new tool to learn.','Employees interact with AWOM the way they already work — by email. A request is sent to the inbox, the agents process it end to end, and the result comes back as a reply, while managers oversee everything from the dashboard.'],
+        ];
+        feats.forEach(([icon,t,short,long]) => { %>
+        <div class="feature-card section-card p-6" tabindex="0" style="cursor:pointer;" onclick="openFeature(this)" onkeydown="if(event.key==='Enter')openFeature(this)" data-title="<%= t %>" data-long="<%= long %>">
+          <div class="flex items-center justify-center mb-4" style="width:40px;height:40px;border-radius:9px;background:rgba(244,162,88,0.12);"><%- ICONS[icon] %></div>
+          <h3 class="font-medium mb-2" style="font-size:16px;"><%= t %></h3>
+          <p class="text-jade" style="font-size:14px;line-height:1.55;"><%= short %></p>
+          <span class="learn text-accent mt-3 inline-block" style="font-size:12px;font-family:'JetBrains Mono',monospace;">Learn more →</span>
+        </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <!-- ── How it works ───────────────────────────────────────── -->
+  <section class="max-w-5xl mx-auto px-6 py-16">
+    <div class="text-center mb-12">
+      <p class="font-mono uppercase tracking-[0.15em] text-jade" style="font-size:11px;">How it works</p>
+      <h2 class="font-display mt-2" style="font-size:34px;">From inbox to outcome</h2>
+    </div>
+    <div class="flex flex-col md:flex-row items-stretch justify-center gap-3">
+      <%
+        const SICONS = {
+          inbox: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l3-7h12l3 7"/><path d="M3 12v6a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-6"/><path d="M3 12h5l1 2h6l1-2h5"/></svg>`,
+          brain: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 1.5v2.5M15 1.5v2.5M9 20v2.5M15 20v2.5M1.5 9h2.5M1.5 15h2.5M20 9h2.5M20 15h2.5"/></svg>`,
+          route: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M8 6h4a4 4 0 0 1 4 4M8 18h4a4 4 0 0 0 4-4"/></svg>`,
+          done: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F4A258" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>`,
+        };
+        const steps = [
+          ['inbox','01','Request arrives','An email lands in the inbox and is screened for malicious content.'],
+          ['brain','02','Agents understand','Intake classifies it, a task agent structures it, and a model scores its urgency.'],
+          ['route','03','Orchestrator routes','An LLM orchestrator picks the right specialized execution agent.'],
+          ['done','04','Executed & replied','The agent does the work, replies to the sender, and the run is logged and scored.'],
+        ];
+        steps.forEach(([icon,n,t,d], i) => { %>
+        <div class="step-card section-card p-6 flex-1 text-center">
+          <div class="step-icon flex items-center justify-center mb-3 mx-auto" style="width:44px;height:44px;border-radius:10px;background:rgba(244,162,88,0.12);animation-delay:<%= i * 0.35 %>s;"><%- SICONS[icon] %></div>
+          <p class="font-mono text-accent" style="font-size:12px;letter-spacing:0.12em;">STEP <%= n %></p>
+          <h3 class="font-medium mt-2 mb-2" style="font-size:15px;"><%= t %></h3>
+          <p class="text-jade" style="font-size:13px;line-height:1.5;"><%= d %></p>
+        </div>
+        <% if (i < steps.length - 1) { %>
+          <div class="flow-arrow hidden md:flex items-center justify-center text-accent" style="font-size:24px;animation-delay:<%= i * 0.35 %>s;">→</div>
+        <% } %>
+      <% }) %>
+    </div>
+  </section>
+
+  <!-- ── CTA ────────────────────────────────────────────────── -->
+  <section class="max-w-3xl mx-auto px-6 py-20 text-center">
+    <h2 class="font-display" style="font-size:38px;line-height:1.1;">Ready to automate the busywork?</h2>
+    <p class="text-jade mt-4" style="font-size:16px;">Set up your workspace in minutes and let the agents handle the rest.</p>
+    <div class="flex items-center justify-center gap-3 mt-8">
+      <a href="/register" id="cta-start" class="btn-primary" style="text-decoration:none;padding:12px 26px;font-size:14px;">Create your workspace</a>
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────── -->
+  <footer class="border-t border-edge">
+    <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-baseline gap-2">
+        <span class="font-display text-lg">AWOM</span>
+        <span class="text-jade font-mono" style="font-size:11px;">Autonomous Workflow Operations Manager</span>
+      </div>
+      <div class="flex items-center gap-5 text-jade" style="font-size:13px;">
+        <a href="/login" style="color:#8DD3CE;text-decoration:none;" onmouseover="this.style.color='#FCF3E3'" onmouseout="this.style.color='#8DD3CE'">Sign in</a>
+        <a href="/register" style="color:#8DD3CE;text-decoration:none;" onmouseover="this.style.color='#FCF3E3'" onmouseout="this.style.color='#8DD3CE'">Get started</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Feature detail modal -->
+  <div id="feature-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeFeature()">
+    <div class="modal-box">
+      <div id="fm-icon" class="flex items-center justify-center mb-4" style="width:46px;height:46px;border-radius:11px;background:rgba(244,162,88,0.12);"></div>
+      <h3 id="fm-title" class="font-display mb-3" style="font-size:24px;"></h3>
+      <p id="fm-long" class="text-jade" style="font-size:14px;line-height:1.65;"></p>
+      <div class="text-right mt-6"><button class="btn-primary" onclick="closeFeature()">Got it</button></div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    // Feature cards → detail modal
+    function openFeature(card) {
+      document.getElementById('fm-title').textContent = card.dataset.title || '';
+      document.getElementById('fm-long').textContent  = card.dataset.long || '';
+      const svg = card.querySelector('svg');
+      const fmIcon = document.getElementById('fm-icon');
+      fmIcon.innerHTML = svg ? svg.outerHTML : '';
+      const s = fmIcon.querySelector('svg'); if (s) { s.setAttribute('width', '24'); s.setAttribute('height', '24'); }
+      document.getElementById('feature-modal').style.display = 'flex';
+    }
+    function closeFeature() { document.getElementById('feature-modal').style.display = 'none'; }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFeature(); });
+
+    // Auth-aware CTAs: if already signed in, point everything at the dashboard.
+    if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+      const toDash = (id, text) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.setAttribute('href', '/dashboard');
+        if (text) el.textContent = text;
+      };
+      toDash('nav-signin', 'Dashboard');
+      toDash('nav-start', 'Go to dashboard');
+      toDash('hero-start', 'Go to dashboard');
+      toDash('cta-start', 'Go to dashboard');
+      const hs = document.getElementById('hero-signin'); if (hs) hs.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

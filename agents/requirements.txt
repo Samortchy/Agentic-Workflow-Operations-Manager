@@ -1,0 +1,33 @@
+# Python dependencies for the agents/ pipeline (Phase 1 + Phase 2).
+# Pinned to the versions in the project's Python 3.10 environment.
+# Regenerate the priority models with priority_agent/tests/training_script_for_the_two_models.py
+# if you bump scikit-learn — the joblib pickles are version-sensitive.
+#
+# Install:  python -m pip install -r agents/requirements.txt   (use Python 3.10)
+
+# ── Web / API ────────────────────────────────────────────────────────────────
+fastapi==0.136.1
+uvicorn==0.22.0
+pydantic==2.12.5
+
+# ── LLM providers ────────────────────────────────────────────────────────────
+groq==1.2.0           # Intake agent + feedback judges
+openai==2.33.0        # Task agent / priority / LLM generators (via OpenRouter)
+
+# ── HTTP / config ────────────────────────────────────────────────────────────
+requests==2.34.2
+httpx==0.27.2         # patched by ssl_patch.py
+python-dotenv==1.2.1
+
+# ── Priority + feedback ML (sklearn joblib models — versions must match pickles)
+scikit-learn==1.7.2
+numpy==2.2.6
+scipy==1.15.3
+pandas==2.2.2
+joblib==1.5.2
+
+# ── Templating + document generation ─────────────────────────────────────────
+Jinja2==3.1.6
+python-pptx==1.0.2    # PPTXWriter
+reportlab==4.4.4      # PDFRenderer
+pdfplumber==0.11.9    # FileExtractor (attachment text)

@@ -35,7 +35,7 @@ async function loadEmployees() {
       const isActive = e.is_active !== false;
       return `<tr class="tbl-row">
         <td style="padding:12px 20px;font-size:13px;font-weight:500;color:#FCF3E3;">${e.name || '—'}</td>
-        <td style="padding:12px 16px;font-size:12px;color:#8DD3CE;">${e.email || '—'}</td>
+        <td style="padding:12px 16px;font-size:12px;color:#8DD3CE;">${e.email || '—'}${e.temp_password ? `<div style="font-size:11px;color:#F4A258;font-family:'JetBrains Mono',monospace;margin-top:2px;">pw: ${e.temp_password}</div>` : ''}</td>
         <td style="padding:12px 16px;font-size:13px;color:#FCF3E3;">${e.role || '—'}</td>
         <td style="padding:12px 16px;"><span class="pill" style="color:#8DD3CE;background:rgba(141,211,206,0.1);">${e.department || '—'}</span></td>
         <td style="padding:12px 16px;font-size:12px;color:#FCF3E3;">${levelLabel(e.access_level)}</td>
@@ -44,13 +44,16 @@ async function loadEmployees() {
           : '<span class="pill" style="color:#8DD3CE;background:rgba(141,211,206,0.08);">Inactive</span>'
         }</td>
         <td style="padding:12px 20px;text-align:right;">
-          ${isActive && Auth.getEmployee()?.access_level >= 3
+          ${isActive && Auth.getEmployee()?.access_level >= 3 && e.employee_id !== Auth.getEmployee()?.employee_id
             ? `<button onclick="deactivateEmployee('${e.employee_id}')" style="font-size:11px;color:#8DD3CE;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;" onmouseover="this.style.color='#E05252'" onmouseout="this.style.color='#8DD3CE'">Deactivate</button>`
             : ''
           }
         </td>
       </tr>`;
     }).join('');
+
+    const note = document.getElementById('pw-demo-note');
+    if (note) note.style.display = list.some(e => e.temp_password) ? 'block' : 'none';
   } catch (e) {
     tbody.innerHTML = emptyRow(7, 'Failed to load employees');
   }
@@ -72,7 +75,11 @@ function openAddModal() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  document.getElementById('add-error').style.display = 'none';
+  const err = document.getElementById('add-error');
+  err.style.display = 'none';
+  err.style.color = ''; err.style.borderColor = ''; err.style.background = ''; err.innerHTML = '';
+  const btn = document.getElementById('add-submit-btn');
+  if (btn) btn.textContent = 'Add Employee';
   document.getElementById('add-modal').style.display = 'flex';
 }
 
@@ -104,14 +111,32 @@ async function submitAdd() {
   }
 
   try {
-    await api.post('/api/employees', body);
-    showToast('Employee added successfully');
-    closeAddModal();
+    const resp = await api.post('/api/employees', body);
     loadEmployees();
+    if (resp && resp.temp_password) {
+      // Show the generated credentials so the admin can share them; keep modal open.
+      errEl.style.display = 'block';
+      errEl.style.color = '#5BC26A';
+      errEl.style.borderColor = '#5BC26A';
+      errEl.style.background = 'rgba(91,194,106,0.1)';
+      errEl.innerHTML = `Employee added. Temporary password for <strong>${body.email}</strong>: `
+        + `<code style="color:#FCF3E3;font-size:13px;">${resp.temp_password}</code><br>`
+        + `Share it with the employee — they can sign in immediately.`;
+      ['add-name', 'add-email', 'add-role'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      btn.disabled = false;
+      btn.textContent = 'Add Another';
+    } else {
+      showToast((resp && resp.login_note) || 'Employee added successfully');
+      closeAddModal();
+      btn.disabled = false;
+      btn.textContent = 'Add Employee';
+    }
   } catch (e) {
+    errEl.style.color = '';
+    errEl.style.borderColor = '';
+    errEl.style.background = '';
     errEl.textContent = e.error || e.message || 'Failed to add employee';
     errEl.style.display = 'block';
-  } finally {
     btn.disabled = false;
     btn.textContent = 'Add Employee';
   }

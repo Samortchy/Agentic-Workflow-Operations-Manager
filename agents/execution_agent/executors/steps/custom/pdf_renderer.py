@@ -1,6 +1,7 @@
 from pathlib import Path
 from ..base_step import BaseStep, StepResult
 from ...core.envelope import resolve_path
+from ...core import backend_client as bc
 
 try:
     from reportlab.lib.pagesizes import A4
@@ -53,9 +54,12 @@ class PDFRenderer(BaseStep):
 
             doc.build(story)
 
+            # Upload to the task-outputs bucket + register on the task (best-effort).
+            storage_path = bc.upload_and_register(str(output_path), envelope, "pdf")
+
             return StepResult(
                 success=True,
-                data={"output_path": str(output_path)},
+                data={"output_path": str(output_path), "storage_path": storage_path},
                 error=None
             )
 

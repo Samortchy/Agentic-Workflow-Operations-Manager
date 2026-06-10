@@ -138,7 +138,7 @@ class JudgeConfig:
     """
     api_key_env_var: str  = "GROQ_API_KEY"
     primary_model: str    = "llama-3.3-70b-versatile"   # best free-tier model
-    fallback_model: str   = "llama3-8b-8192"            # fast fallback
+    fallback_model: str   = "llama-3.1-8b-instant"      # fast fallback
     auto_accept_score: int  = 4       # score 4 or 5 → auto-accept
     auto_reject_score: int  = 2       # score 1 or 2 → flag for human
     request_timeout: int    = 30      # seconds
@@ -517,10 +517,11 @@ class JudgeAgent:
         return f"""You are an expert evaluator for an office workflow automation system.
 Your job is to evaluate whether the AI Priority Agent made the correct urgency decision.
 
-PRIORITY DEFINITIONS:
-- High   : Affects multiple people, blocks work, safety risk, or has a very tight deadline
-- Medium : Affects one person moderately, has a workaround, or has a moderate deadline
-- Low    : Cosmetic, admin, nice-to-have, or has a flexible deadline
+PRIORITY DEFINITIONS (this system uses four levels):
+- critical : Emergency / outage / safety risk, or blocks many people — needs immediate action
+- high     : Affects multiple people or blocks work; tight deadline
+- medium   : Affects one person moderately, has a workaround, or a moderate deadline
+- low      : Cosmetic, admin, nice-to-have, or a flexible deadline
 
 TASK INFORMATION:
   Request text      : "{request_text}"
@@ -538,7 +539,7 @@ Consider the request text, its potential impact, and the execution outcome.
 
 Respond with ONLY valid JSON — no preamble, no markdown, no explanation outside the JSON:
 {{
-  "suggested_priority": "High" or "Medium" or "Low",
+  "suggested_priority": "low" or "medium" or "high" or "critical",
   "score": integer 1 to 5 (1=completely wrong, 3=acceptable, 5=perfect),
   "confidence": "high" or "medium" or "low",
   "reason": "one sentence explaining your evaluation"
@@ -561,23 +562,24 @@ Respond with ONLY valid JSON — no preamble, no markdown, no explanation outsid
         return f"""You are an expert evaluator for an office workflow automation system.
 Your job is to evaluate whether the AI Intake Agent correctly classified an incoming request.
 
-AVAILABLE CATEGORIES:
-- IT Support  : Computer hardware, software, network, email, access issues
-- HR Request  : Leave, payroll, contracts, employee records, workplace issues
-- Facilities  : Office environment, equipment, safety, maintenance, rooms
-- Finance     : Invoices, purchase orders, expense claims, budget approvals
+AVAILABLE DEPARTMENTS:
+- IT         : Computer hardware, software, network, email, access/provisioning
+- HR         : Leave, payroll, contracts, onboarding, employee records, workplace issues
+- Finance    : Invoices, purchase orders, expense claims, reimbursements, budgets
+- cross-dept : Spans multiple departments (e.g. company-wide meetings)
+- Other      : Fits none of the above
 
 REQUEST TEXT:
 "{request_text}"
 
-PREDICTED CATEGORY: {predicted_type}
+PREDICTED DEPARTMENT: {predicted_type}
 
 EVALUATION TASK:
-Was "{predicted_type}" the correct category for this request?
+Was "{predicted_type}" the correct department for this request?
 
 Respond with ONLY valid JSON — no preamble, no markdown, no explanation outside the JSON:
 {{
-  "suggested_type": one of "IT Support" / "HR Request" / "Facilities" / "Finance",
+  "suggested_type": one of "IT" / "HR" / "Finance" / "cross-dept" / "Other",
   "score": integer 1 to 5 (1=completely wrong, 3=acceptable, 5=perfect),
   "confidence": "high" or "medium" or "low",
   "reason": "one sentence explaining your evaluation"
@@ -605,8 +607,8 @@ Respond with ONLY valid JSON — no preamble, no markdown, no explanation outsid
         """
         # Fallback response when judge is unavailable
         _fallback = {
-            "suggested_priority": "Medium",
-            "suggested_type":     "IT Support",
+            "suggested_priority": "medium",
+            "suggested_type":     "",
             "score":              3,
             "confidence":         "low",
             "reason":             "Judge unavailable — check GROQ_API_KEY and groq package.",

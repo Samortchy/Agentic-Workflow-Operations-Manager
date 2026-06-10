@@ -52,7 +52,7 @@
       "type": "dispatcher",
       "class": "EmailDispatcher",
       "config": {
-        "recipient_field": "task.requester_name",
+        "recipient_field": "task.requester_email",
         "log_audit": true
       }
     }

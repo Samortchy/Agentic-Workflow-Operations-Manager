@@ -39,12 +39,17 @@ Spec compliance:
     - Uses resolve_path() from core.envelope for all envelope reads
 """
 
+import os
 import sqlite3
 import uuid
 import json
+from pathlib import Path
 from datetime import datetime, timezone
 from ..base_step import BaseStep, StepResult
 from ...core.envelope import resolve_path
+
+# parents[2] == executors/ (custom → steps → executors); the DB lives in executors/data/.
+_DEFAULT_DB_PATH = Path(__file__).parents[2] / "data" / "office.db"
 
 
 class QueueInjector(BaseStep):
@@ -55,7 +60,7 @@ class QueueInjector(BaseStep):
             target_agent      = config.get("target_agent", "account_manager")
             task_type         = config.get("task_type", "access_provisioning")
             one_task_per_tool = config.get("one_task_per_tool", True)
-            db_path           = config.get("db_path", "data/office.db")
+            db_path           = config.get("db_path") or os.environ.get("DB_PATH") or str(_DEFAULT_DB_PATH)
             default_priority  = config.get("default_priority_score", 3)
 
             # ── 2. Read employee details from the NLP extractor step ──────
@@ -71,11 +76,13 @@ class QueueInjector(BaseStep):
             start_date     = employee_data.get("start_date", "")
 
             # ── 3. Read tooling list from the DBExtractor step ────────────
+            # DBExtractor returns {rows, row_count, record}; the tooling list is the
+            # multi-row `rows`. Each row is a dict with a `tool_name` column.
             tooling_data = resolve_path(
                 envelope,
                 "execution.steps.fetch_tooling_list.data"
             )
-            tools = tooling_data.get("tools", [])
+            tools = tooling_data.get("rows", [])
 
             if not tools:
                 # No tools to provision — not an error, just nothing to do
@@ -100,7 +107,10 @@ class QueueInjector(BaseStep):
             con = sqlite3.connect(db_path)
 
             for tool in tools:
-                tool_name = tool if isinstance(tool, str) else tool.get("name", str(tool))
+                if isinstance(tool, str):
+                    tool_name = tool
+                else:
+                    tool_name = tool.get("tool_name") or tool.get("name") or str(tool)
 
                 try:
                     task_id     = f"TASK-ACC-{uuid.uuid4().hex[:6].upper()}"

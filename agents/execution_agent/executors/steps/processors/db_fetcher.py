@@ -1,4 +1,5 @@
 import logging
+import os
 import sqlite3
 from pathlib import Path
 
@@ -19,7 +20,10 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-_DB_PATH = Path(__file__).parents[2] / "data" / "office.db"
+# parents[2] == executors/ (processors → steps → executors); the DB lives in executors/data/.
+# Honour DB_PATH so both DBFetcher and DBExtractor resolve to the same database.
+_DEFAULT_DB_PATH = Path(__file__).parents[2] / "data" / "office.db"
+_DB_PATH = Path(os.environ.get("DB_PATH", str(_DEFAULT_DB_PATH)))
 
 # Envelope sections searched (in order) when resolving a match_on field name.
 _MATCH_ON_SECTIONS = ("intake", "task", "priority")

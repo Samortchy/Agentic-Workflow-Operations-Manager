@@ -50,6 +50,8 @@ const AUDIT_EVENT_TYPES = [
 
 const OUTCOME_VERDICTS = ['success', 'failure', 'unknown'];
 
+const MEETING_STATUSES = ['proposed', 'confirmed', 'cancelled'];
+
 const AGENT_NAMES = [
     'escalation_router',
     'document_summarizer',
@@ -80,6 +82,7 @@ module.exports = {
     SUBSCRIPTION_STATUSES,
     AUDIT_EVENT_TYPES,
     OUTCOME_VERDICTS,
+    MEETING_STATUSES,
     AGENT_NAMES,
     STORAGE_BUCKET,
     AGENT_API_KEY_HEADER

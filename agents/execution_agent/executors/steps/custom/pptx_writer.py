@@ -7,6 +7,7 @@ import re
 from datetime import date
 from ..base_step import BaseStep, StepResult
 from ...core.envelope import resolve_path
+from ...core import backend_client as bc
 
 try:
     from pptx import Presentation
@@ -132,10 +133,14 @@ class PPTXWriter(BaseStep):
             output_path = os.path.join(output_dir, filename)
             prs.save(output_path)
 
+            # Upload to the task-outputs bucket + register on the task (best-effort).
+            storage_path = bc.upload_and_register(output_path, envelope, "pptx")
+
             return StepResult(
                 success=True,
                 data={
                     "output_path":            output_path,
+                    "storage_path":           storage_path,
                     "slides_written":         slides_written,
                     "template_used":          template_path or "blank",
                     "paused":                 False,

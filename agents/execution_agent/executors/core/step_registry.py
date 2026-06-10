@@ -18,6 +18,9 @@ from ..steps.custom.slot_ranker               import SlotRanker
 from ..steps.custom.queue_injector            import QueueInjector
 from ..steps.custom.pptx_writer               import PPTXWriter
 from ..steps.custom.pdf_renderer              import PDFRenderer
+from ..steps.custom.persist_meeting           import PersistMeeting
+from ..steps.custom.access_guard              import AccessGuard
+from ..steps.custom.clock_checker             import ClockChecker
 
 STEP_REGISTRY = {
     "extractor": {
@@ -41,6 +44,9 @@ STEP_REGISTRY = {
         "QueueInjector":  QueueInjector,
         "PPTXWriter":     PPTXWriter,
         "PDFRenderer":    PDFRenderer,
+        "PersistMeeting": PersistMeeting,
+        "AccessGuard":    AccessGuard,
+        "ClockChecker":   ClockChecker,
     },
     "agent_call": {
         "DocumentSummarizer": "document_summarizer",

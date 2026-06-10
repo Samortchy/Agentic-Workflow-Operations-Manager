@@ -33,6 +33,7 @@ for _p in [str(_AGENTS_DIR), str(_TASK_AGENT_DIR)]:
 from execution_agent.executors.core import backend_client as bc
 from execution_agent.orchestration_agent.routing_table import resolve_agent_name
 from execution_agent.executors.core.base_agent import ExecutionRunner
+from execution_agent.executors.core.eval_hook import evaluate_and_record, judge_classification_and_record
 
 logging.basicConfig(
     level=logging.INFO,
@@ -71,6 +72,21 @@ def _run(task_id: str, company_id: str, envelope: dict) -> None:
             return
 
     is_resume  = bool(envelope.get("resume"))
+
+    # Classification eval (safe mode) for every fresh task — judges intake/priority
+    # labels and records a classification_eval signal + needs_review flag (no retraining).
+    if not is_resume:
+        judge_classification_and_record(envelope, task_id=task_id, company_id=company_id)
+
+    # Honor the autonomy gate (incl. the Phase-4C injection guard, which sets
+    # isAutonomous=False on suspicious email): non-autonomous tasks go to human
+    # review and never auto-execute.
+    if not is_resume and not _is_autonomous(envelope):
+        reason = envelope.get("intake", {}).get("reasoning", "not_autonomous")
+        logger.info("Task %s non-autonomous → pending_human_review (%s)", task_id, str(reason)[:100])
+        _review(task_id, company_id, envelope, reason)
+        return
+
     task_type  = envelope.get("intake", {}).get("task_type", "")
     department = envelope.get("intake", {}).get("department", "")
 
@@ -121,6 +137,27 @@ def _run(task_id: str, company_id: str, envelope: dict) -> None:
         logger.info("Task %s → %s", task_id, backend_status)
     except Exception as e:
         logger.error("Failed to write results for task %s: %s", task_id, e)
+
+    # Score the finished run → outcome_signals (best-effort; never breaks the worker)
+    evaluate_and_record(result, task_id=task_id, company_id=company_id)
+
+
+def _is_autonomous(envelope: dict) -> bool:
+    def _t(v):
+        return v is True or (isinstance(v, str) and v.strip().lower() == "true")
+    return (_t(envelope.get("task", {}).get("isAutonomous"))
+            and _t(envelope.get("intake", {}).get("isAutonomous")))
+
+
+def _review(task_id: str, company_id: str, envelope: dict, reason: str) -> None:
+    execution = envelope.setdefault("execution", {})
+    execution["status"]        = "pending_human_review"
+    execution["review_reason"] = reason
+    try:
+        bc.update_task_envelope(task_id, execution)
+        bc.update_task_status(task_id, "pending_human_review")
+    except Exception as e:
+        logger.warning("Could not mark task %s for review: %s", task_id, e)
 
 
 def _fail(task_id: str, company_id: str, agent_name: str, error: str) -> None:

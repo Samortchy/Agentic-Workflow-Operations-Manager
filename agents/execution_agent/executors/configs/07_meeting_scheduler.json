@@ -3,8 +3,16 @@
     "agent_version": "v1",
     "department": "cross-dept",
     "risk_tier": "medium",
-    "approval": "single_confirm",
+    "approval": "none",
     "steps": [
+        {
+            "name": "check_time",
+            "type": "custom",
+            "class": "ClockChecker",
+            "config": {
+                "timezone": "Africa/Cairo"
+            }
+        },
         {
             "name": "extract_participants",
             "type": "extractor",
@@ -24,7 +32,9 @@
             "class": "DBExtractor",
             "config": {
                 "service": "calendar_api",
-                "look_ahead_days": 5
+                "look_ahead_days": 5,
+                "timezone": "Africa/Cairo",
+                "working_hours": [9, 11, 14]
             }
         },
         {
@@ -35,6 +45,12 @@
                 "max_proposals": 3,
                 "scoring": "participant_overlap"
             }
+        },
+        {
+            "name": "persist_meeting",
+            "type": "custom",
+            "class": "PersistMeeting",
+            "config": {}
         },
         {
             "name": "send_invite",

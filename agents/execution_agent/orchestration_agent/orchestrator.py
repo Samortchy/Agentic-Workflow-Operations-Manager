@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from main_pipeline.pipeline import run_pipeline
 from ..executors.core.base_agent import ExecutionRunner
 from ..executors.core import backend_client as bc
+from ..executors.core.eval_hook import evaluate_and_record, judge_classification_and_record
 from .routing_table import resolve_agent_name
 
 logger = logging.getLogger(__name__)
@@ -68,6 +69,10 @@ class Orchestrator:
         # Inject context so steps can read company_id/task_id
         envelope["_ctx"] = {"company_id": cid, "task_id": task_id}
 
+        # Classification eval (safe mode) — judge intake/priority labels, record a
+        # classification_eval signal + needs_review flag (labeling only, no retraining).
+        judge_classification_and_record(envelope, task_id=task_id, company_id=cid)
+
         is_autonomous = (
             self._is_truthy(envelope.get("task", {}).get("isAutonomous", False))
             and self._is_truthy(envelope.get("intake", {}).get("isAutonomous", False))
@@ -114,6 +119,9 @@ class Orchestrator:
                     bc.update_task_status(task_id, backend_status, agent_name=agent_name)
                 except Exception as e:
                     logger.warning("Failed to write results to backend: %s", e)
+
+            # Score the finished run → outcome_signals (best-effort; never breaks the run)
+            evaluate_and_record(result, task_id=task_id, company_id=company_id)
 
             return result
 

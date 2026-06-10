@@ -1,8 +1,14 @@
+import re
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateNotFound, UndefinedError
 
 from ..base_step import BaseStep, StepResult
+
+# processors -> steps -> executors. Relative template paths anchor here so rendering
+# works regardless of the process CWD.
+_EXECUTORS_ROOT = Path(__file__).parents[2]
+_PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
 
 
 class TemplateRenderer(BaseStep):
@@ -23,12 +29,26 @@ class TemplateRenderer(BaseStep):
             if not template_path:
                 return StepResult(success=False, data={}, error="config.template is required")
 
-            path = Path(template_path)
+            ctx = _flatten_envelope(envelope)
+
+            # Interpolate {field} placeholders in the template path from the envelope,
+            # e.g. "templates/onboarding/{department}_onboarding.j2" -> ".../it_onboarding.j2".
+            # Filenames are lowercase by convention, so substituted values are lowercased.
+            try:
+                template_path = _interpolate_path(template_path, ctx)
+            except KeyError as e:
+                return StepResult(
+                    success=False, data={},
+                    error=f"template path placeholder {e} not found in envelope",
+                )
+
+            # Anchor relative paths to executors/ so rendering is CWD-independent.
+            path = _resolve_template_path(template_path)
             if not path.exists():
                 return StepResult(
                     success=False,
                     data={},
-                    error=f"template file not found: {template_path}",
+                    error=f"template file not found: {path}",
                 )
 
             env = Environment(
@@ -37,7 +57,6 @@ class TemplateRenderer(BaseStep):
                 autoescape=False,
             )
             template = env.get_template(path.name)
-            ctx = _flatten_envelope(envelope)
             rendered = template.render(**ctx)
 
             output_field = config.get("output_field", "rendered")
@@ -49,6 +68,23 @@ class TemplateRenderer(BaseStep):
             return StepResult(success=False, data={}, error=f"template variable error: {e}")
         except Exception as e:
             return StepResult(success=False, data={}, error=str(e))
+
+
+def _interpolate_path(template_path: str, ctx: dict) -> str:
+    """Replace {field} placeholders in a template path with lowercased envelope values."""
+    def repl(m):
+        key = m.group(1)
+        val = ctx.get(key)
+        if val is None:
+            raise KeyError(key)
+        return str(val).lower()
+    return _PLACEHOLDER_RE.sub(repl, template_path)
+
+
+def _resolve_template_path(template_path: str) -> Path:
+    """Anchor a relative template path to the executors/ root; leave absolute paths as-is."""
+    p = Path(template_path)
+    return p if p.is_absolute() else _EXECUTORS_ROOT / p
 
 
 def _flatten_envelope(envelope: dict) -> dict:

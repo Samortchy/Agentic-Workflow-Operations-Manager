@@ -28,84 +28,47 @@ _FILENAME_TO_AGENT: dict[str, str] = {
     "09_onboarding_coordinator.json": "onboarding_coordinator",
 }
 
-_SYSTEM_PROMPT = """
-You are a routing agent for an autonomous office workflow system.
-Your only job is to select the best execution agent for the given task.
+_KNOWN_AGENTS = set(_FILENAME_TO_AGENT.values())
 
-Available agents:
-
-1. 01_escalation_router.json
-   Escalates tasks to a human reviewer when something has gone wrong or needs urgent approval.
-   Use for: failed processes, policy violations, compliance issues, anything explicitly marked as an incident or emergency.
-   Do NOT use for: report generation, presentations, summaries, scheduling, or any routine automated task.
-
-2. 02_document_summarizer.json
-   Summarises documents using a map-reduce strategy.
-   Use for: document digests, file summaries, attachment summarisation, quarterly report summaries.
-
-3. 03_report_generator.json
-   Generates formatted reports from data and metrics.
-   Use for: report generation, analytics summaries, budget overviews, KPI reports, finance reports.
-
-4. 04_leave_checker.json
-   Looks up employee leave balance and answers leave-related questions.
-   Use for: leave balance checks, PTO inquiries, annual leave questions.
-
-5. 05_email_agent.json
-   Drafts and sends email replies.
-   Use for: email replies, FAQ answers, IT confirmations (password reset, access requests, software info).
-
-6. 06_powerpoint_agent.json
-   Generates PowerPoint (.pptx) presentation files from an LLM-produced slide spec.
-   Use for: slide decks, strategy presentations, pitch decks, board packs, finance reviews, leadership presentations.
-   This is the correct agent whenever a .pptx or presentation file is requested, regardless of audience.
-
-7. 07_meeting_scheduler.json
-   Books meetings and sends calendar invites.
-   Use for: scheduling meetings, interview slots, calendar bookings.
-
-8. 08_expense_tracker.json
-   Tracks and reports on expense submissions.
-   Use for: expense status checks, reimbursement inquiries, expense report requests.
-
-9. 09_onboarding_coordinator.json
-   Coordinates new-hire onboarding workflows.
-   Use for: onboarding information requests, new employee setup, onboarding process questions.
-
-ROUTING RULES (apply in order, stop at first match):
-1. Task mentions creating a presentation, slide deck, or .pptx file → 06_powerpoint_agent.json
-2. Task mentions summarising a document, file, or report → 02_document_summarizer.json
-3. Task mentions generating a report, KPI, analytics, or budget overview → 03_report_generator.json
-4. Task mentions leave, PTO, or time off → 04_leave_checker.json
-5. Task mentions drafting or sending an email → 05_email_agent.json
-6. Task mentions scheduling a meeting or calendar invite → 07_meeting_scheduler.json
-7. Task mentions expense, reimbursement, or cost claim → 08_expense_tracker.json
-8. Task mentions onboarding, new hire, or employee setup → 09_onboarding_coordinator.json
-9. Task is an explicit incident, failure, violation, or needs urgent human approval → 01_escalation_router.json
-10. Nothing matches any of the above → 01_escalation_router.json
-
-VALID CONFIG VALUES — your response MUST use one of these exactly:
-- 01_escalation_router.json
-- 02_document_summarizer.json
-- 03_report_generator.json
-- 04_leave_checker.json
-- 05_email_agent.json
-- 06_powerpoint_agent.json
-- 07_meeting_scheduler.json
-- 08_expense_tracker.json
-- 09_onboarding_coordinator.json
-
-STRICT OUTPUT RULES:
-- You MUST always return a config value — never return null.
-- Return ONLY this JSON object and nothing else:
-
-{
-  "config": "<one of the nine filenames above>",
-  "reasoning": "<one sentence explaining your choice>"
+# Intake's task_type vocabulary differs from the agent names (e.g. "leave_check"
+# vs "leave_checker"); map it explicitly so the deterministic fallback routes
+# correctly instead of escalating everything.
+_TASKTYPE_TO_AGENT: dict[str, str] = {
+    "escalation":        "escalation_router",
+    "document_summary":  "document_summarizer",
+    "report":            "report_generator",
+    "leave_check":       "leave_checker",
+    "email":             "email_agent",
+    "presentation":      "powerpoint_agent",
+    "expense_check":     "expense_tracker",
+    "onboarding":        "onboarding_coordinator",
+    "meeting_scheduler": "meeting_scheduler",
 }
 
-No markdown. No backticks. No explanation outside the JSON.
-""".strip()
+
+def _fallback_agent(task_type: str) -> str:
+    """
+    Deterministic fallback when the LLM router can't be used. Maps intake's
+    `task_type` to the corresponding agent; if it is already an agent name, use it;
+    only escalate when nothing matches.
+    """
+    agent = _TASKTYPE_TO_AGENT.get(task_type)
+    if agent:
+        logger.info("Routing %r -> %r (deterministic fallback)", task_type, agent)
+        return agent
+    if task_type in _KNOWN_AGENTS:
+        logger.info("Routing by task_type=%r (already an agent name)", task_type)
+        return task_type
+    logger.warning("task_type %r is not a known agent — escalating", task_type)
+    return _FALLBACK
+
+_AG = str(Path(__file__).resolve().parents[2])
+if _AG not in sys.path:
+    sys.path.insert(0, _AG)
+from prompts import ROUTER_SYSTEM
+
+# Centralized in agents/prompts/ (verbatim) — see that package.
+_SYSTEM_PROMPT = ROUTER_SYSTEM
 
 
 def resolve_agent_name(task_type: str, department: str, envelope: dict) -> str:
@@ -134,6 +97,7 @@ def resolve_agent_name(task_type: str, department: str, envelope: dict) -> str:
         from llm_provider import get_provider
         llm = get_provider()
 
+        model = getattr(llm, "model", "?")
         raw = llm.complete(
             system_prompt=_SYSTEM_PROMPT,
             user_message=user_message,
@@ -141,19 +105,35 @@ def resolve_agent_name(task_type: str, department: str, envelope: dict) -> str:
             max_tokens=128,
         )
 
-        result   = json.loads(raw)
-        chosen   = result.get("config", "")
-        reasoning = result.get("reasoning", "")
+        # 200-OK-but-empty: the model returned null/blank content (not a credits or
+        # network problem). Say so plainly, then route deterministically by task_type.
+        if not raw or not str(raw).strip():
+            logger.error(
+                "LLM router returned EMPTY content (HTTP call succeeded) for model %r — "
+                "using deterministic fallback", model,
+            )
+            return _fallback_agent(task_type)
 
+        try:
+            result = json.loads(raw)
+        except (json.JSONDecodeError, TypeError) as je:
+            logger.error(
+                "LLM router returned non-JSON (%s) for model %r: %r — using deterministic fallback",
+                je, model, str(raw)[:200],
+            )
+            return _fallback_agent(task_type)
+
+        chosen    = result.get("config", "")
+        reasoning = result.get("reasoning", "")
         logger.info("LLM router chose %r — %s", chosen, reasoning)
 
         agent_name = _FILENAME_TO_AGENT.get(chosen)
         if not agent_name:
-            logger.warning("LLM returned unknown config %r — falling back to escalation_router", chosen)
-            return _FALLBACK
+            logger.warning("LLM returned unknown config %r — using deterministic fallback", chosen)
+            return _fallback_agent(task_type)
 
         return agent_name
 
     except Exception as exc:
-        logger.error("LLM router failed (%s) — falling back to escalation_router", exc)
-        return _FALLBACK
+        logger.error("LLM router failed (%s) — using deterministic fallback", exc)
+        return _fallback_agent(task_type)

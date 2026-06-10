@@ -85,7 +85,10 @@ class OpenRouterProvider(LLMProvider):
                 {"role": "user",   "content": user_message},
             ],
         )
-        return response.choices[0].message.content
+        # The model can return a 200 with null content (empty completion). Normalise
+        # to "" so callers never hit a 'NoneType' crash on json.loads(None).
+        content = response.choices[0].message.content if response.choices else None
+        return content or ""
 
 
 # ---------------------------------------------------------------------------

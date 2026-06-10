@@ -48,7 +48,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/mock-data.js"></script>
   <script>
-    if (Auth.isLoggedIn()) window.location.href = '/';
+    if (Auth.isLoggedIn()) window.location.href = '/dashboard';
 
     function enterPreview() {
       localStorage.setItem('awom_demo', 'true');
@@ -62,7 +62,7 @@
         access_level: 4,
         is_active: true,
       });
-      window.location.href = '/';
+      window.location.href = '/dashboard';
     }
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -91,20 +91,31 @@
           return;
         }
 
-        Auth.setTokens(data.access_token, data.refresh_token);
-        if (data.user) Auth.setUser(data.user);
-
-        // Fetch employee profile
+        // Valid Supabase auth is NOT enough — the account must also be linked to an
+        // active employee profile. Verify with the token before persisting the session.
+        let me = null;
         try {
           const empRes = await fetch(`${window.API_BASE}/api/employees`, {
             headers: { Authorization: `Bearer ${data.access_token}` },
           }).then(r => r.json());
           const employees = Array.isArray(empRes) ? empRes : (empRes.employees || []);
-          const me = employees.find(e => e.email === email);
-          if (me) Auth.setEmployee(me);
+          me = employees.find(e => e.email === email) || null;
         } catch {}
 
-        window.location.href = '/';
+        if (!me) {
+          // Authenticated, but no employee profile → not authorized to enter.
+          Auth.clear();
+          errEl.textContent = 'No active employee profile is linked to this account. Contact your administrator.';
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Sign in';
+          return;
+        }
+
+        Auth.setTokens(data.access_token, data.refresh_token);
+        if (data.user) Auth.setUser(data.user);
+        Auth.setEmployee(me);
+        window.location.href = '/dashboard';
       } catch (err) {
         errEl.textContent = 'Could not reach server. Is the backend running?';
         errEl.style.display = 'block';

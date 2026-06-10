@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import uuid
 import logging
 from datetime import datetime, timezone
@@ -12,24 +13,32 @@ from llm_provider import LLMProvider
 logger = logging.getLogger(__name__)
 
 
-SYSTEM_PROMPT = """
-You are the Task Structuring Agent in an autonomous office workflow system.
+def _extract_sender_email(raw_text: str) -> str:
+    """
+    Pull the verified sender address from the 'From:' header the poller prepends.
+    This is the TRUSTED requester identifier — derived from the email envelope,
+    never from LLM extraction or the email body. Returns "" if none found.
+    """
+    for line in (raw_text or "").splitlines():
+        if line.lower().startswith("from:"):
+            m = re.search(r"<([^>]+@[^>]+)>", line) or re.search(r"[\w.+-]+@[\w.+-]+\.\w+", line)
+            if m:
+                return m.group(1) if "<" in line else m.group(0)
+        # Only the first From: line (poller puts the real sender there); stop at blank
+        # line that separates headers from body to avoid matching body-embedded "From:".
+        if line.strip() == "":
+            break
+    return ""
 
-Your job is EXTRACTION ONLY — not classification.
 
-Return EXACTLY this JSON schema:
+import os, sys
+_AG = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if _AG not in sys.path:
+    sys.path.insert(0, _AG)
+from prompts import TASK_STRUCTURING_SYSTEM
 
-{
-  "title": "<3-8 word summary>",
-  "description": "<full description>",
-  "requester_name": "<name or 'unknown'>",
-  "stated_deadline": "<deadline or 'none stated'>",
-  "action_required": "<single sentence verb>",
-  "success_criteria": "<observable success>"
-}
-
-Return JSON only.
-""".strip()
+# Centralized in agents/prompts/ (verbatim) — see that package.
+SYSTEM_PROMPT = TASK_STRUCTURING_SYSTEM
 
 
 class TaskStructuringAgent:
@@ -253,6 +262,8 @@ class TaskStructuringAgent:
                 "unknown",
             ).strip(),
 
+            requester_email=_extract_sender_email(envelope.raw_text),
+
             stated_deadline=extracted.get(
                 "stated_deadline",
                 "none stated",
@@ -297,6 +308,8 @@ class TaskStructuringAgent:
             task_type=intake.task_type,
 
             requester_name="unknown",
+
+            requester_email=_extract_sender_email(envelope.raw_text),
 
             stated_deadline="none stated",
 

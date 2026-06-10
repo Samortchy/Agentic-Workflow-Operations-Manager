@@ -2,7 +2,14 @@ const tasksService = require('../services/tasks.service.js');
 
 const getTasks = async (req, res) => {
   try {
-    const data = await tasksService.getAll({ ...req.query, company_id: req.company_id });
+    const filters = { ...req.query, company_id: req.company_id };
+    // Visibility: managers/admins (level >= 3) see all company tasks; everyone else
+    // sees only their own requests plus their department's tasks.
+    if ((req.access_level || 1) < 3) {
+      filters.restrict_email = (req.user && req.user.email) || '';
+      filters.restrict_department = req.department || '';
+    }
+    const data = await tasksService.getAll(filters);
     return res.status(200).json(data);
   } catch (err) {
     return res.status(400).json({ error: err.message });

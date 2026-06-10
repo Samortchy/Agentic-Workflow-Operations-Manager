@@ -21,6 +21,7 @@ if _ROOT not in sys.path:
 from .intake_agent import intake_agent
 from .adapter import dict_to_envelope
 from .task_agent import build_agent, run as run_task_agent
+from .injection_guard import screen as screen_injection
 from priority_agent.validation import priority_prediction
 from task_agent.envelope import PrioritySection
 
@@ -40,6 +41,16 @@ def run_pipeline(raw_text: str) -> dict:
 
     # Step 1 — Intake: returns a plain dict with envelope_id + intake section
     intake_dict = intake_agent(raw_text)
+
+    # Step 1b — Injection guard (Phase 4C): if the email shows prompt-injection
+    # patterns, force human review so nothing auto-executes on attacker-controlled text.
+    flagged, hits = screen_injection(raw_text)
+    if flagged:
+        intk = intake_dict.setdefault("intake", {})
+        intk["isAutonomous"] = False
+        note = (" [SECURITY: possible prompt injection — routed to human review: "
+                + "; ".join(hits[:3]) + "]")
+        intk["reasoning"] = (str(intk.get("reasoning", "")) + note).strip()
 
     # Step 2 — Convert to typed Envelope so the task agent can consume it
     envelope = dict_to_envelope(intake_dict)

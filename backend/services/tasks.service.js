@@ -7,7 +7,8 @@ const {
 } = require('../config/constants.js');
 
 const getAll = async (filters = {}) => {
-  const { company_id, status, department, agent_name, is_autonomous, priority_score } = filters;
+  const { company_id, status, department, agent_name, is_autonomous, priority_score,
+          restrict_email, restrict_department } = filters;
 
   let query = supabase
     .from('tasks')
@@ -21,6 +22,14 @@ const getAll = async (filters = {}) => {
   if (agent_name)              query = query.eq('agent_name', agent_name);
   if (priority_score)          query = query.eq('priority_score', parseInt(priority_score));
   if (is_autonomous !== undefined) query = query.eq('is_autonomous', is_autonomous === 'true' || is_autonomous === true);
+
+  // Row-level visibility for non-managers: own requests OR own department.
+  if (restrict_email || restrict_department) {
+    const ors = [];
+    if (restrict_email)      ors.push(`requester_email.eq.${restrict_email}`);
+    if (restrict_department) ors.push(`department.eq.${restrict_department}`);
+    query = query.or(ors.join(','));
+  }
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
@@ -63,7 +72,9 @@ const create = async (envelope, company_id) => {
     priority_score:  envelope.priority.priority_score,
     priority_label:  envelope.priority.priority_label,
     is_autonomous:   envelope.task.isAutonomous,
-    requester_email: envelope.task.requester_name,
+    // Verified sender (from the From: header), falling back to the display name only
+    // if no email was captured. See P1-4b.
+    requester_email: envelope.task.requester_email || envelope.task.requester_name,
     task_type:       envelope.task.task_type,
     stated_deadline: envelope.task.stated_deadline,
     envelope,

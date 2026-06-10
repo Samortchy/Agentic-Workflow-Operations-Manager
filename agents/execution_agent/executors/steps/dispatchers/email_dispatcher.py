@@ -45,12 +45,14 @@ class EmailDispatcher(BaseStep):
                 )
             try:
                 recipient = resolve_path(envelope, recipient_field)
-            except KeyError as exc:
-                return StepResult(success=False, data={}, error=str(exc))
+            except KeyError:
+                recipient = None
 
-            # If resolved value isn't a valid email, fall back to the From: address
-            # in the raw_text (common when requester_name holds a display name only).
-            if recipient and "@" not in str(recipient):
+            # Trusted-recipient resolution: replies must reach the verified sender.
+            # If the configured field is missing or isn't a real email address, fall back
+            # to the From: header the poller captured from the email envelope (trusted) —
+            # never an LLM-populated or body-embedded address.
+            if not recipient or "@" not in str(recipient):
                 recipient = self._extract_from_email(envelope.get("raw_text", "")) or recipient
 
             # 2. Find email body from most recent step that has one.

@@ -59,7 +59,8 @@ class TaskSection:
     department: str          # copied from IntakeSection
     is_autonomous: bool      # copied from IntakeSection
     task_type: str           # copied from IntakeSection
-    requester_name: str      # extracted or "unknown"
+    requester_name: str      # extracted or "unknown" (LLM — display name only, untrusted)
+    requester_email: str     # verified sender, parsed from the From: header (NOT the LLM)
     stated_deadline: str     # extracted or "none stated"
     action_required: str     # single sentence
     success_criteria: str    # what "done" looks like
@@ -74,6 +75,7 @@ class TaskSection:
             "isAutonomous":     self.is_autonomous,
             "task_type":        self.task_type,
             "requester_name":   self.requester_name,
+            "requester_email":  self.requester_email,
             "stated_deadline":  self.stated_deadline,
             "action_required":  self.action_required,
             "success_criteria": self.success_criteria,
@@ -90,6 +92,7 @@ class TaskSection:
             is_autonomous=d["isAutonomous"],
             task_type=d["task_type"],
             requester_name=d["requester_name"],
+            requester_email=d.get("requester_email", ""),  # backward-safe for older envelopes
             stated_deadline=d["stated_deadline"],
             action_required=d["action_required"],
             success_criteria=d["success_criteria"],

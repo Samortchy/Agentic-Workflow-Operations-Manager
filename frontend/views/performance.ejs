@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head', { title: 'Performance', apiBase }) %>
+<body>
+  <div style="display:flex;height:100vh;overflow:hidden;">
+    <%- include('partials/sidebar', { page }) %>
+
+    <main style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+      <div style="padding:20px 32px;border-bottom:1px solid #0A5A7C;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#011F30;position:sticky;top:0;z-index:10;">
+        <h1 style="font-family:'DM Serif Display',serif;font-size:22px;color:#FCF3E3;margin:0;">Performance</h1>
+        <button onclick="loadPerformance()" class="btn-ghost">Refresh</button>
+      </div>
+
+      <div style="padding:32px;flex:1;">
+        <!-- Stat cards -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;">
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Runs Evaluated</p>
+            <p style="font-family:'DM Serif Display',serif;font-size:36px;color:#FCF3E3;margin:0;line-height:1;" id="p-total">—</p>
+          </div>
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Success Rate</p>
+            <p style="font-family:'DM Serif Display',serif;font-size:36px;color:#5BC26A;margin:0;line-height:1;" id="p-success">—</p>
+          </div>
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Avg Score</p>
+            <p style="font-family:'DM Serif Display',serif;font-size:36px;color:#F4A258;margin:0;line-height:1;" id="p-avg">—</p>
+          </div>
+          <div class="stat-card">
+            <p style="font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 12px;">Flagged for Review</p>
+            <p style="font-family:'DM Serif Display',serif;font-size:36px;color:#E05252;margin:0;line-height:1;" id="p-flagged">—</p>
+          </div>
+        </div>
+
+        <!-- Classification judge summary -->
+        <div id="cls-summary" style="margin-bottom:24px;font-size:13px;color:#8DD3CE;"></div>
+
+        <!-- Charts -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">
+          <div class="section-card" style="padding:16px 20px;">
+            <h2 style="font-size:14px;font-weight:600;color:#FCF3E3;margin:0 0 12px;">Score Over Time</h2>
+            <div style="position:relative;height:220px;width:100%;"><canvas id="chart-trend"></canvas></div>
+          </div>
+          <div class="section-card" style="padding:16px 20px;">
+            <h2 style="font-size:14px;font-weight:600;color:#FCF3E3;margin:0 0 12px;">Avg Score by Agent</h2>
+            <div style="position:relative;height:220px;width:100%;"><canvas id="chart-agents"></canvas></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:380px 1fr;gap:16px;">
+          <!-- Per-agent breakdown -->
+          <div class="section-card" style="overflow:hidden;">
+            <div style="padding:16px 20px;border-bottom:1px solid #0A5A7C;"><h2 style="font-size:14px;font-weight:600;color:#FCF3E3;margin:0;">By Agent</h2></div>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr style="border-bottom:1px solid #0A5A7C;">
+                <th style="padding:10px 20px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">Agent</th>
+                <th style="padding:10px 12px;text-align:right;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">Runs</th>
+                <th style="padding:10px 12px;text-align:right;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">Avg</th>
+                <th style="padding:10px 20px;text-align:right;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">Success</th>
+              </tr></thead>
+              <tbody id="p-agents"><tr><td colspan="4" style="padding:30px;text-align:center;color:#8DD3CE;font-size:13px;">Loading…</td></tr></tbody>
+            </table>
+          </div>
+
+          <!-- Recent evaluations -->
+          <div class="section-card" style="overflow:hidden;">
+            <div style="padding:16px 20px;border-bottom:1px solid #0A5A7C;"><h2 style="font-size:14px;font-weight:600;color:#FCF3E3;margin:0;">Recent Evaluations</h2></div>
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead><tr style="border-bottom:1px solid #0A5A7C;">
+                  <th style="padding:10px 20px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">Task</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">Agent</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">Score</th>
+                  <th style="padding:10px 12px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">Verdict</th>
+                  <th style="padding:10px 16px;text-align:left;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">Top issue</th>
+                  <th style="padding:10px 20px;text-align:right;font-size:11px;color:#8DD3CE;font-family:'JetBrains Mono',monospace;font-weight:400;text-transform:uppercase;">When</th>
+                </tr></thead>
+                <tbody id="p-recent"><tr><td colspan="6" style="padding:40px;text-align:center;color:#8DD3CE;font-size:13px;">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/performance.js"></script>
+</body>
+</html>

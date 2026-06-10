@@ -21,6 +21,15 @@ const Auth = {
   isLoggedIn() { return !!this.getTokens().access; },
   requireAuth() {
     if (!this.isLoggedIn()) { window.location.href = '/login'; return false; }
+    // After sign-out, the browser's back/forward cache (bfcache) can restore this
+    // protected page without re-running scripts — making logout look undone. Re-check
+    // auth whenever the page is shown (incl. bfcache restores) and bounce if signed out.
+    if (!this._bfGuard) {
+      this._bfGuard = true;
+      window.addEventListener('pageshow', () => {
+        if (!Auth.isLoggedIn()) window.location.replace('/login');
+      });
+    }
     return true;
   },
   logout() {
@@ -74,8 +83,13 @@ async function _req(method, path, body, retry = false) {
   });
 
   if (res.status === 401 && !retry) {
+    const before = Auth.getTokens().access;
     const ok = await _doRefresh();
     if (ok) return _req(method, path, body, true);
+    // A concurrent request or another tab/page may have already refreshed the
+    // token — if so, use the latest one instead of terminating the session.
+    const after = Auth.getTokens().access;
+    if (after && after !== before) return _req(method, path, body, true);
     Auth.logout();
     return null;
   }
@@ -110,6 +124,8 @@ function statusPill(status) {
     denied:               ['Denied',           '#E05252', 'rgba(224,82,82,0.15)'],
     timed_out:            ['Timed Out',        '#E05252', 'rgba(224,82,82,0.12)'],
     active:               ['Active',           '#5BC26A', 'rgba(91,194,106,0.12)'],
+    proposed:             ['Proposed',         '#F4A258', 'rgba(244,162,88,0.12)'],
+    confirmed:            ['Confirmed',        '#5BC26A', 'rgba(91,194,106,0.12)'],
     suspended:            ['Suspended',        '#E05252', 'rgba(224,82,82,0.12)'],
     trial:                ['Trial',            '#F4A258', 'rgba(244,162,88,0.12)'],
     cancelled:            ['Cancelled',        '#8DD3CE', 'rgba(141,211,206,0.08)'],

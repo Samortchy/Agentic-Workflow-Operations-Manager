@@ -16,9 +16,12 @@ const base = { apiBase: API_BASE };
 
 app.get('/login', (req, res) => res.render('login', base));
 app.get('/register', (req, res) => res.render('register', base));
-app.get('/', (req, res) => res.render('dashboard', { ...base, page: 'dashboard' }));
+app.get('/', (req, res) => res.render('landing', base));
+app.get('/dashboard', (req, res) => res.render('dashboard', { ...base, page: 'dashboard' }));
+app.get('/performance', (req, res) => res.render('performance', { ...base, page: 'performance' }));
 app.get('/tasks', (req, res) => res.render('tasks', { ...base, page: 'tasks' }));
 app.get('/tasks/:id', (req, res) => res.render('task-detail', { ...base, page: 'tasks', taskId: req.params.id }));
+app.get('/meetings', (req, res) => res.render('meetings', { ...base, page: 'meetings' }));
 app.get('/approvals', (req, res) => res.render('approvals', { ...base, page: 'approvals' }));
 app.get('/employees', (req, res) => res.render('employees', { ...base, page: 'employees' }));
 app.get('/audit-logs', (req, res) => res.render('audit-logs', { ...base, page: 'audit-logs' }));

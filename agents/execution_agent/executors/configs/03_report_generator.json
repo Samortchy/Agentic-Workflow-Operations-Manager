@@ -26,8 +26,7 @@
         "table": "operational_metrics",
         "output_field": "metrics",
         "filters": {
-          "department": "execution.steps.extract_report_params.data.department",
-          "date_range": "execution.steps.extract_report_params.data.date_range"
+          "department": "execution.steps.extract_report_params.data.department"
         }
       }
     },
@@ -65,7 +64,7 @@
       "type": "dispatcher",
       "class": "EmailDispatcher",
       "config": {
-        "recipient_field": "task.requester_name",
+        "recipient_field": "task.requester_email",
         "attach_field": "execution.steps.render_pdf.data.output_path"
       }
     }

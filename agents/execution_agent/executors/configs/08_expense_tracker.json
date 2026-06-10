@@ -18,13 +18,21 @@
             }
         },
         {
+            "name": "access_guard",
+            "type": "custom",
+            "class": "AccessGuard",
+            "config": {
+                "cross_person_min_level": 3
+            }
+        },
+        {
             "name": "fetch_expense_record",
             "type": "extractor",
             "class": "DBExtractor",
             "config": {
                 "table": "finance_expense_reports",
                 "access": "read_only",
-                "match_on": ["employee_name", "report_id"]
+                "match_on": ["email", "report_id"]
             }
         },
         {
@@ -52,7 +60,7 @@
             "type": "dispatcher",
             "class": "EmailDispatcher",
             "config": {
-                "recipient_field": "task.requester_name",
+                "recipient_field": "task.requester_email",
                 "run_if": "execution.steps.check_anomalies.data.anomaly == false"
             }
         }

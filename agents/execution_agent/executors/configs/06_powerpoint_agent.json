@@ -6,17 +6,6 @@
     "approval": "single_confirm",
     "steps": [
         {
-            "name": "select_template",
-            "type": "processor",
-            "class": "DBFetcher",
-            "config": {
-                "table": "templates/pptx/templates_meta.json",
-                "match_on": [
-                    "task_type"
-                ]
-            }
-        },
-        {
             "name": "generate_slide_json",
             "type": "processor",
             "class": "LLMGenerator",
@@ -54,7 +43,7 @@
             "type": "dispatcher",
             "class": "EmailDispatcher",
             "config": {
-                "recipient_field": "task.requester_name",
+                "recipient_field": "task.requester_email",
                 "attach_field": "execution.steps.write_pptx.data.output_path"
             }
         }

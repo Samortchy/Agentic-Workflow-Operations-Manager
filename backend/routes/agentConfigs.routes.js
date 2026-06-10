@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const requireLevel = require('../middleware/requireLevel.js');
+const { ACCESS_LEVELS } = require('../config/constants.js');
 const {
   getAgentConfigs,
   getAgentConfigById,
@@ -19,13 +21,14 @@ router.get('/active/:agent_name', getActiveConfig);
 // GET /agent-configs/:config_id
 router.get('/:config_id', getAgentConfigById);
 
+// Config writes are Executive-only (agents authenticate at service level and pass).
 // POST /agent-configs
-router.post('/', createAgentConfig);
+router.post('/', requireLevel(ACCESS_LEVELS.EXECUTIVE), createAgentConfig);
 
 // PATCH /agent-configs/:config_id
-router.patch('/:config_id', updateAgentConfig);
+router.patch('/:config_id', requireLevel(ACCESS_LEVELS.EXECUTIVE), updateAgentConfig);
 
 // PATCH /agent-configs/:config_id/deactivate
-router.patch('/:config_id/deactivate', deactivateAgentConfig);
+router.patch('/:config_id/deactivate', requireLevel(ACCESS_LEVELS.EXECUTIVE), deactivateAgentConfig);
 
 module.exports = router;

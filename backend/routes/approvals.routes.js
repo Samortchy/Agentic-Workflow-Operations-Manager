@@ -1,5 +1,7 @@
 const express = require('express');
 const router  = express.Router();
+const requireLevel = require('../middleware/requireLevel.js');
+const { ACCESS_LEVELS } = require('../config/constants.js');
 const {
   getApprovals,
   getApprovalById,
@@ -21,7 +23,7 @@ router.get('/:approval_id', getApprovalById);
 // POST /approvals
 router.post('/', createApproval);
 
-// PATCH /approvals/:approval_id/resolve
-router.patch('/:approval_id/resolve', resolveApproval);
+// PATCH /approvals/:approval_id/resolve  → Manager+ only (the human approve/deny action)
+router.patch('/:approval_id/resolve', requireLevel(ACCESS_LEVELS.MANAGER), resolveApproval);
 
 module.exports = router;

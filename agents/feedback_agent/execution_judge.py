@@ -129,7 +129,7 @@ class ExecutionJudgeConfig:
     """
     api_key_env_var:        str   = "GROQ_API_KEY"
     primary_model:          str   = "llama-3.3-70b-versatile"
-    fallback_model:         str   = "llama3-8b-8192"
+    fallback_model:         str   = "llama-3.1-8b-instant"
     deadline_tolerance_pct: float = 0.1
     max_acceptable_errors:  int   = 1
     auto_flag_score:        int   = 2
@@ -164,6 +164,14 @@ class ExecutionJudgeConfig:
 _SUCCESSFUL_STATUSES = {"completed"}
 _REVIEW_STATUSES     = {"queued_for_review", "approval_pending", "pending_human_review"}
 _FAILURE_STATUSES    = {"failed", "escalated"}
+
+# Intake now emits task_type values that ARE the executor names, so the correct
+# routing is simply agent_name == task_type when task_type is a known agent.
+_KNOWN_AGENTS = {
+    "escalation_router", "document_summarizer", "report_generator", "leave_checker",
+    "email_agent", "powerpoint_agent", "meeting_scheduler", "expense_tracker",
+    "onboarding_coordinator",
+}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -412,8 +420,9 @@ class ExecutionJudge:
             return 3
 
         expected = (
-            self.config.expected_routing.get((task_type, department))
-            or self.config.expected_routing.get((task_type, ""))
+            task_type if task_type in _KNOWN_AGENTS
+            else (self.config.expected_routing.get((task_type, department))
+                  or self.config.expected_routing.get((task_type, "")))
         )
 
         if expected is None:
@@ -534,7 +543,7 @@ class ExecutionJudge:
             )
             return 3
 
-        request_text = envelope.get("intake", {}).get("request_text", "")
+        request_text = envelope.get("raw_text", "") or envelope.get("intake", {}).get("request_text", "")
         prompt  = self._build_output_quality_prompt(task_type, agent_name, request_text, output_content)
         result  = self._call_llm(prompt)
         score   = max(1, min(5, int(result.get("score", 3))))
@@ -550,39 +559,27 @@ class ExecutionJudge:
 
         return score
 
+    # Output text can live under any of these keys in a step's data dict, across
+    # all executor types (mirrors EmailDispatcher's body detection). Scanned
+    # most-recent-step-first so the final produced artifact wins.
+    _CONTENT_KEYS = (
+        "body", "email_body", "rendered",
+        "draft_email_reply", "draft_escalation_brief", "draft_report_ready", "draft_summary_ready",
+        "summary", "content", "text", "message", "response", "assessment", "reasoning",
+    )
+
     def _extract_output_content(self, envelope: dict, agent_name: str) -> str:
-        """
-        Extract actual output text from the envelope steps.
-        Checks the most common field paths across all executor types.
-        """
+        """Extract the agent's produced text by scanning step data for known content keys."""
         steps = envelope.get("execution", {}).get("steps", {})
 
-        candidates = [
-            # Email agents
-            steps.get("generate_email",    {}).get("data", {}).get("body",       ""),
-            steps.get("draft_reply",        {}).get("data", {}).get("content",    ""),
-            steps.get("render_email",       {}).get("data", {}).get("body",       ""),
-            # Summary agents
-            steps.get("summarize",          {}).get("data", {}).get("summary",    ""),
-            steps.get("generate_summary",   {}).get("data", {}).get("summary",    ""),
-            # LLM generators
-            steps.get("generate",           {}).get("data", {}).get("text",       ""),
-            steps.get("llm_generate",       {}).get("data", {}).get("text",       ""),
-            steps.get("generate_response",  {}).get("data", {}).get("text",       ""),
-            # Leave checker
-            steps.get("check_leave",        {}).get("data", {}).get("response",   ""),
-            steps.get("leave_response",     {}).get("data", {}).get("message",    ""),
-            # Expense tracker
-            steps.get("anomaly_check",      {}).get("data", {}).get("summary",    ""),
-            steps.get("check_expense",      {}).get("data", {}).get("assessment", ""),
-            # Report generator
-            steps.get("generate_report",    {}).get("data", {}).get("content",    ""),
-            steps.get("render_report",      {}).get("data", {}).get("text",       ""),
-        ]
-
-        for c in candidates:
-            if isinstance(c, str) and c.strip():
-                return c.strip()[:1000]
+        for step in reversed(list(steps.values())):
+            data = step.get("data", {})
+            if not isinstance(data, dict):
+                continue
+            for key in self._CONTENT_KEYS:
+                v = data.get(key)
+                if isinstance(v, str) and v.strip():
+                    return v.strip()[:1000]
 
         # Last resort — stringify steps (truncated)
         if steps:

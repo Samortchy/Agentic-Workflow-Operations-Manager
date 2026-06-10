@@ -18,14 +18,21 @@
             }
         },
         {
+            "name": "access_guard",
+            "type": "custom",
+            "class": "AccessGuard",
+            "config": {
+                "cross_person_min_level": 3
+            }
+        },
+        {
             "name": "fetch_leave_record",
             "type": "extractor",
             "class": "DBExtractor",
             "config": {
                 "table": "hr_leave_balances",
                 "match_on": [
-                    "employee_name",
-                    "leave_type"
+                    "email"
                 ]
             }
         },
@@ -42,7 +49,7 @@
             "type": "dispatcher",
             "class": "EmailDispatcher",
             "config": {
-                "recipient_field": "task.requester_name"
+                "recipient_field": "task.requester_email"
             }
         }
     ],

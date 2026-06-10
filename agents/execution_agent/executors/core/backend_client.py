@@ -19,9 +19,13 @@ logger = logging.getLogger(__name__)
 BACKEND_URL     = os.environ.get("BACKEND_URL", "http://localhost:4000").rstrip("/")
 SUPABASE_URL    = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_KEY    = os.environ.get("SUPABASE_SERVICE_KEY", "")
+AGENT_API_KEY   = os.environ.get("AGENT_API_KEY", "")
 STORAGE_BUCKET  = "task-outputs"
 
+# Agents authenticate to the backend with the shared agent key (x-agent-api-key).
 _HEADERS = {"Content-Type": "application/json"}
+if AGENT_API_KEY:
+    _HEADERS["x-agent-api-key"] = AGENT_API_KEY
 _TIMEOUT = 15  # seconds for regular calls
 _UPLOAD_TIMEOUT = 60  # seconds for file uploads
 
@@ -234,6 +238,98 @@ def create_outcome_signal(
     return r.json()
 
 
+# ── Employees ─────────────────────────────────────────────────────────────────
+
+def get_employees(
+    department: str | None = None,
+    company_id: str | None = None,
+    active_only: bool = True,
+) -> list[dict]:
+    """
+    GET /api/employees — optionally filtered by department. Used to resolve
+    meeting participants from the company directory.
+    """
+    params: dict = {"company_id": company_id or get_company_id()}
+    if department:
+        params["department"] = department
+    if active_only:
+        params["is_active"] = "true"
+    r = requests.get(
+        f"{BACKEND_URL}/api/employees", params=params, headers=_HEADERS, timeout=_TIMEOUT
+    )
+    r.raise_for_status()
+    data = r.json()
+    return data if isinstance(data, list) else data.get("employees", [])
+
+
+# ── Meetings ──────────────────────────────────────────────────────────────────
+
+def create_meeting(
+    title: str,
+    participants: list[str],
+    proposed_slots: list,
+    task_id: str | None = None,
+    organizer_email: str | None = None,
+    confirmed_slot: str | None = None,
+    status: str = "proposed",
+    company_id: str | None = None,
+) -> dict:
+    """POST /api/meetings — persist a proposed (or confirmed) meeting."""
+    body = {
+        "company_id":      company_id or get_company_id(),
+        "task_id":         task_id,
+        "title":           title,
+        "organizer_email": organizer_email,
+        "participants":    participants,
+        "proposed_slots":  proposed_slots,
+        "confirmed_slot":  confirmed_slot,
+        "status":          status,
+    }
+    r = requests.post(
+        f"{BACKEND_URL}/api/meetings", json=body, headers=_HEADERS, timeout=_TIMEOUT
+    )
+    r.raise_for_status()
+    return r.json()
+
+
+def get_meetings(status: str | None = None, company_id: str | None = None) -> list[dict]:
+    """GET /api/meetings — optionally filtered by status."""
+    params: dict = {"company_id": company_id or get_company_id()}
+    if status:
+        params["status"] = status
+    r = requests.get(
+        f"{BACKEND_URL}/api/meetings", params=params, headers=_HEADERS, timeout=_TIMEOUT
+    )
+    r.raise_for_status()
+    data = r.json()
+    return data if isinstance(data, list) else data.get("meetings", [])
+
+
+def get_confirmed_slots(company_id: str | None = None) -> list[str]:
+    """
+    Return the already-booked slot timestamps (status=confirmed meetings) so the
+    calendar mock can treat them as unavailable. Best-effort: returns [] on error.
+    """
+    try:
+        meetings = get_meetings(status="confirmed", company_id=company_id)
+    except Exception as e:
+        logger.warning("get_confirmed_slots failed (treating none as booked): %s", e)
+        return []
+    return [m["confirmed_slot"] for m in meetings if m.get("confirmed_slot")]
+
+
+def update_meeting(meeting_id: str, updates: dict) -> dict:
+    """PATCH /api/meetings/:id — confirm / cancel / reschedule."""
+    r = requests.patch(
+        f"{BACKEND_URL}/api/meetings/{meeting_id}",
+        json=updates,
+        headers=_HEADERS,
+        timeout=_TIMEOUT,
+    )
+    r.raise_for_status()
+    return r.json()
+
+
 # ── Supabase Storage ──────────────────────────────────────────────────────────
 
 _CONTENT_TYPES = {
@@ -276,3 +372,27 @@ def upload_output_file(local_path: str, company_id: str, task_id: str) -> str:
 
     logger.info("Uploaded %s → %s/%s", fname, STORAGE_BUCKET, storage_path)
     return storage_path
+
+
+def upload_and_register(local_path: str, envelope: dict, file_type: str) -> str:
+    """
+    Best-effort: upload a produced file to the task-outputs bucket (under
+    {company_id}/{task_id}/{filename}) and register it on the task. Returns the
+    storage path on success, or the local path if context is missing / upload fails.
+    Never raises — a storage hiccup must not fail the step.
+    """
+    task       = envelope.get("task", {})
+    ctx        = envelope.get("_ctx", {})
+    task_id    = task.get("task_id") or ctx.get("task_id")
+    company_id = ctx.get("company_id") or task.get("company_id")
+
+    if not company_id or not task_id or str(task_id).upper() in ("UNKNOWN", "TASK-UNKNOWN"):
+        logger.info("upload_and_register skipped (no company_id/task_id) for %s", local_path)
+        return local_path
+    try:
+        storage_path = upload_output_file(local_path, company_id, task_id)
+        register_output_file(task_id, storage_path, file_type)
+        return storage_path
+    except Exception as e:
+        logger.warning("upload_and_register failed for %s: %s", local_path, e)
+        return local_path

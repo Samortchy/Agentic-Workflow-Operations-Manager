@@ -1,4 +1,8 @@
-const supabase = require('../config/supabase.js');
+// Service-role client: this resolves the authenticated user's OWN employee row
+// (keyed on the verified req.user.email), so it must bypass RLS — the anon client
+// is blocked by RLS and would wrongly report "no employee". Safe: no user-supplied
+// id is trusted here, only the verified email from the JWT.
+const supabase = require('../config/supabaseAdmin.js');
 
 // Resolves the company that the authenticated user belongs to
 // and attaches it to req.company_id.

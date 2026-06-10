@@ -29,15 +29,15 @@ const _validateConfig = (config) => {
 };
 
 const getAll = async (filters = {}) => {
-  const { company_id, agent_name, is_active } = filters;
+  // NOTE: agent_configs is a GLOBAL table (no company_id column) — configs apply to
+  // all companies. Do not filter by company_id here (it would error).
+  const { agent_name, is_active } = filters;
 
   let query = supabase
     .from('agent_configs')
     .select('*')
     .order('agent_name', { ascending: true });
 
-  // Return configs that belong to this company OR are global (company_id IS NULL)
-  if (company_id) query = query.or(`company_id.eq.${company_id},company_id.is.null`);
   if (agent_name)              query = query.eq('agent_name', agent_name);
   if (is_active !== undefined) query = query.eq('is_active', is_active === 'true' || is_active === true);
 
@@ -57,24 +57,9 @@ const getById = async (config_id) => {
   return data;
 };
 
-// Called by the factory runner at startup to load its config.
-const getActive = async (agent_name, company_id) => {
-  // 1. Try company-specific config first
-  if (company_id) {
-    const { data } = await supabase
-      .from('agent_configs')
-      .select('*')
-      .eq('agent_name', agent_name)
-      .eq('company_id', company_id)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (data) return data;
-  }
-
-  // 2. Fall back to any active config with this agent_name (universal / unscoped)
+// Called by the factory runner to load an agent's config. Configs are global
+// (no company_id column), so this is a simple active-by-name lookup.
+const getActive = async (agent_name, _company_id) => {
   const { data, error } = await supabase
     .from('agent_configs')
     .select('*')
@@ -88,15 +73,16 @@ const getActive = async (agent_name, company_id) => {
   return data;
 };
 
-const create = async ({ company_id, agent_name, config, version = '1.0' }) => {
+const create = async ({ agent_name, config, version = '1.0' }) => {
   if (!AGENT_NAMES.includes(agent_name)) {
     throw new Error(`agent_name must be one of: ${AGENT_NAMES.join(', ')}`);
   }
   _validateConfig(config);
 
+  // agent_configs has no company_id column (global table) — don't insert it.
   const { data, error } = await supabase
     .from('agent_configs')
-    .insert([{ company_id, agent_name, config, version, is_active: true }])
+    .insert([{ agent_name, config, version, is_active: true }])
     .select()
     .single();
 

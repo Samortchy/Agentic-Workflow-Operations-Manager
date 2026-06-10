@@ -79,16 +79,42 @@ def _strip_html(html: str) -> str:
 
 # ── Email parsing ─────────────────────────────────────────────────────────────
 
-def _decode_header(raw: str | None) -> str:
+def _decode_header(raw) -> str:
+    """Decode a possibly RFC2047-encoded header. Never raises on malformed input."""
     if not raw:
         return ""
-    parts = []
-    for chunk, charset in email.header.decode_header(raw):
-        if isinstance(chunk, bytes):
-            parts.append(chunk.decode(charset or "utf-8", errors="replace"))
-        else:
-            parts.append(chunk)
-    return "".join(parts)
+    try:
+        # Standard robust idiom — handles mixed encoded-words/charsets cleanly.
+        return str(email.header.make_header(email.header.decode_header(raw)))
+    except Exception:
+        pass
+    # Fallback: best-effort manual decode that tolerates odd chunk/charset types.
+    try:
+        parts = []
+        for chunk, charset in email.header.decode_header(raw):
+            if isinstance(chunk, (bytes, bytearray)):
+                enc = charset if isinstance(charset, str) else "utf-8"
+                parts.append(bytes(chunk).decode(enc, errors="replace"))
+            else:
+                parts.append(str(chunk))   # str/int/anything → str
+        return "".join(parts)
+    except Exception:
+        return str(raw)
+
+
+def _decode_part(part) -> str | None:
+    """Decode one message part to text, tolerating odd payload/charset types.
+    Returns None if the part has no usable text (so callers can skip it)."""
+    try:
+        payload = part.get_payload(decode=True)
+        if not isinstance(payload, (bytes, bytearray)):
+            return None  # multipart container, None, or an unexpected type (e.g. int)
+        charset = part.get_content_charset()
+        if not isinstance(charset, str):
+            charset = "utf-8"
+        return bytes(payload).decode(charset, errors="replace")
+    except Exception:
+        return None
 
 
 def _extract_body(msg: email.message.Message) -> str:
@@ -98,24 +124,19 @@ def _extract_body(msg: email.message.Message) -> str:
 
     if msg.is_multipart():
         for part in msg.walk():
+            if "attachment" in str(part.get("Content-Disposition", "")):
+                continue
+            text = _decode_part(part)
+            if text is None:
+                continue
             ct = part.get_content_type()
-            cd = part.get("Content-Disposition", "")
-            if "attachment" in cd:
-                continue
-            payload = part.get_payload(decode=True)
-            if payload is None:
-                continue
-            charset = part.get_content_charset() or "utf-8"
-            text = payload.decode(charset, errors="replace")
             if ct == "text/plain":
                 plain.append(text)
             elif ct == "text/html":
                 html.append(text)
     else:
-        payload = msg.get_payload(decode=True)
-        if payload:
-            charset = msg.get_content_charset() or "utf-8"
-            text = payload.decode(charset, errors="replace")
+        text = _decode_part(msg)
+        if text is not None:
             if msg.get_content_type() == "text/html":
                 html.append(text)
             else:
@@ -175,6 +196,25 @@ def _submit_to_pipeline(sender: str, subject: str, body: str) -> bool:
         return False
 
 
+# ── Bounce / auto-mail filtering ─────────────────────────────────────────────
+# Replies sent to non-deliverable addresses generate bounce / "delivery status"
+# mail from mailer-daemon. These are not user requests and must not be fed to the
+# pipeline (they only create noise). Detect and skip them.
+_BOUNCE_SENDERS  = ("mailer-daemon", "postmaster", "no-reply", "noreply")
+_BOUNCE_SUBJECTS = (
+    "delivery status notification", "undelivered mail", "mail delivery",
+    "delivery incomplete", "returned mail", "failure notice", "delivery has failed",
+    "out of office", "automatic reply",
+)
+
+
+def _is_bounce(sender: str, subject: str) -> bool:
+    s = (sender or "").lower()
+    subj = (subject or "").lower()
+    return (any(b in s for b in _BOUNCE_SENDERS)
+            or any(b in subj for b in _BOUNCE_SUBJECTS))
+
+
 # ── IMAP polling ──────────────────────────────────────────────────────────────
 
 def _connect() -> imaplib.IMAP4_SSL:
@@ -195,20 +235,35 @@ def _process_unseen(mail: imaplib.IMAP4_SSL) -> int:
     for uid in ids:
         try:
             _, msg_data = mail.fetch(uid, "(RFC822)")
-            raw = msg_data[0][1]
+            # The fetch response can contain non-tuple items (flags, closing parens),
+            # so msg_data[0][1] may be an int and message_from_bytes() then crashes with
+            # "'int' object has no attribute 'decode'". Pick the element whose second
+            # member is the actual RFC822 byte payload.
+            raw = next((p[1] for p in (msg_data or [])
+                        if isinstance(p, tuple) and len(p) >= 2 and isinstance(p[1], (bytes, bytearray))), None)
+            if not isinstance(raw, (bytes, bytearray)):
+                logger.warning("uid=%s: fetch returned no RFC822 body — skipping", uid)
+                continue
             sender, subject, body = _parse_message(raw)
+
+            if _is_bounce(sender, subject):
+                logger.info("Skipping bounce/auto email from %s | %r", sender, subject[:60])
+                continue   # finally still marks it \Seen so it won't recur
 
             logger.info("Processing email from %s | %r", sender, subject[:60])
 
             ok = _submit_to_pipeline(sender, subject, body)
 
-            # Mark as SEEN regardless — avoids reprocessing bad emails in a crash loop
-            mail.store(uid, "+FLAGS", "\\Seen")
-
             if ok:
                 processed += 1
         except Exception as e:
             logger.error("Failed to process message uid=%s: %s", uid, e)
+        finally:
+            # Mark as SEEN regardless — a bad email must not be retried every poll.
+            try:
+                mail.store(uid, "+FLAGS", "\\Seen")
+            except Exception as e:
+                logger.warning("Could not mark uid=%s as seen: %s", uid, e)
 
     return processed
 
